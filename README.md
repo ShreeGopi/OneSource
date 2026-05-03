@@ -1,3 +1,306 @@
 # OneSource
-Creative Genome(OneSource) is a structured system for analyzing e-commerce attention patterns. It focuses on tagging and organizing data from Amazon, TikTok, and Meta. Instead of just generating content, it builds a data moat to reveal why visuals work
-Project Vision “Creative Genome” / “Attention Intelligence”  A structured intelligence system for ecommerce and internet attention patterns.  Focus areas:  Amazon listings ecommerce ads hooks/headlines thumbnails CTAs landing pages viral creative formats Core Philosophy  We are NOT building: ❌ a fragile AI wrapper dependent entirely on Claude/OpenAI/Gemini generation.  We ARE building: ✅ durable value through:  structured data workflows accumulated pattern intelligence searchable insights attention analysis  AI should only act as:  accelerator tagging assistant summarizer clustering layer  NOT the core business.  Main Product Direction  Collect high-performing ecommerce creatives from:  Amazon listings TikTok ads Meta ads Pinterest landing pages viral ecommerce content  Then:  structure them classify them analyze WHY they perform well  Instead of:  “generate random content”  We focus on:  “understanding repeatable attention patterns.”  Core MVP 1. Collect 50–100 ecommerce creatives  Manually or semi-manually.  Store:  screenshots/images hooks/headlines CTA styles niche/category source/platform links 2. Add Structured Tagging  Examples:  Emotion fear aspiration curiosity luxury status urgency Hook Type problem-solution before-after authority shocking transformation Visual Style UGC cinematic luxury clean meme-style Other creator archetype CTA patterns 3. Searchable Discovery  User can search/filter by:  emotion hook type visual style niche CTA type platform  Examples:  “show luxury skincare hooks” “show curiosity-based thumbnails” “show fitness before-after ads” 4. Insights Layer  System identifies:  repeated winning patterns trending emotional triggers dominant visual styles fatigue/oversaturation hook correlations  Example:  “Most high-performing skincare creatives currently use authority + transformation framing.”  Strategic Insight  The moat is:  structured attention intelligence  NOT:  AI generation  AI helps analyze data.  But the value comes from:  proprietary organization searchable pattern intelligence accumulated attention data workflow systems Long-Term Vision  Like:  “Bloomberg Terminal for Internet Attention”  or  “Search engine for winning ecommerce psychology.”
+
+## Creative Genome / Attention Intelligence
+
+**OneSource** is a structured intelligence system for analyzing e-commerce attention patterns.
+
+Instead of being just another AI content generator, OneSource focuses on building a **durable data moat** around high-performing internet creatives.
+
+The platform collects, tags, organizes, and analyzes winning creatives from platforms like:
+
+- Amazon
+- TikTok
+- Meta Ads
+- Pinterest
+- Landing Pages
+- Viral Ecommerce Campaigns
+
+The goal is simple:
+
+> Understand **why** certain creatives perform well — not just generate more content.
+
+---
+
+# Project Vision
+
+## “Creative Genome” / “Attention Intelligence”
+
+A structured intelligence layer for internet attention patterns.
+
+### Focus Areas
+
+- Amazon listings
+- Ecommerce ads
+- Hooks & headlines
+- Thumbnails
+- CTAs
+- Landing pages
+- Viral creative formats
+
+---
+
+# Core Philosophy
+
+## We Are **NOT** Building
+
+❌ A fragile AI wrapper dependent entirely on:
+
+- Claude
+- OpenAI
+- Gemini
+- Other generative APIs
+
+---
+
+## We **ARE** Building
+
+✅ Durable value through:
+
+- Structured data
+- Workflow systems
+- Accumulated pattern intelligence
+- Searchable insights
+- Attention analysis
+
+---
+
+# Role of AI
+
+AI should only act as:
+
+- Accelerator
+- Tagging assistant
+- Summarizer
+- Clustering layer
+- Pattern analysis tool
+
+AI is **NOT** the core business.
+
+The real value comes from:
+
+- Proprietary organization
+- Structured datasets
+- Searchable creative intelligence
+- Long-term accumulated attention patterns
+
+---
+
+# Main Product Direction
+
+## Step 1 — Collect Winning Creatives
+
+Gather high-performing ecommerce creatives from:
+
+- Amazon listings
+- TikTok ads
+- Meta ads
+- Pinterest
+- Landing pages
+- Viral ecommerce content
+
+---
+
+## Step 2 — Structure the Data
+
+For each creative, store:
+
+- Screenshots / images
+- Hooks / headlines
+- CTA styles
+- Niche / category
+- Source platform
+- Links
+
+---
+
+## Step 3 — Analyze WHY It Works
+
+Instead of:
+
+> “Generate random content”
+
+We focus on:
+
+> “Understanding repeatable attention patterns.”
+
+---
+
+# Core MVP
+
+## 1. Collect 50–100 Ecommerce Creatives
+
+Initially done:
+
+- Manually
+- Or semi-manually
+
+### Store Data Such As
+
+- Screenshots/images
+- Hooks/headlines
+- CTA styles
+- Niche/category
+- Source/platform
+- Links
+
+---
+
+## 2. Add Structured Tagging
+
+### Emotion Tags
+
+Examples:
+
+- Fear
+- Aspiration
+- Curiosity
+- Luxury
+- Status
+- Urgency
+
+---
+
+### Hook Type Tags
+
+Examples:
+
+- Problem → Solution
+- Before → After
+- Authority
+- Shocking
+- Transformation
+
+---
+
+### Visual Style Tags
+
+Examples:
+
+- UGC
+- Cinematic
+- Luxury
+- Clean
+- Meme-style
+
+---
+
+### Other Tags
+
+- Creator archetype
+- CTA patterns
+- Product positioning
+- Audience intent
+
+---
+
+# Searchable Discovery
+
+Users can search/filter creatives by:
+
+- Emotion
+- Hook type
+- Visual style
+- Niche
+- CTA type
+- Platform
+
+---
+
+## Example Queries
+
+- “Show luxury skincare hooks”
+- “Show curiosity-based thumbnails”
+- “Show fitness before-after ads”
+
+---
+
+# Insights Layer
+
+The system identifies:
+
+- Repeated winning patterns
+- Trending emotional triggers
+- Dominant visual styles
+- Fatigue / oversaturation
+- Hook correlations
+
+---
+
+## Example Insight
+
+> “Most high-performing skincare creatives currently use authority + transformation framing.”
+
+---
+
+# Strategic Insight
+
+## The Real Moat
+
+The moat is:
+
+> Structured Attention Intelligence
+
+NOT:
+
+> AI Generation
+
+AI helps analyze the data.
+
+But the long-term value comes from:
+
+- Proprietary organization
+- Searchable pattern intelligence
+- Accumulated attention data
+- Workflow systems
+- Historical creative insights
+
+---
+
+# Long-Term Vision
+
+OneSource aims to become:
+
+> “Bloomberg Terminal for Internet Attention”
+
+or
+
+> “Search Engine for Winning Ecommerce Psychology”
+
+---
+
+# Why This Matters
+
+Most tools generate content.
+
+Very few systems understand:
+
+- Why attention works
+- Which patterns repeat
+- What emotional triggers convert
+- How creative trends evolve over time
+
+OneSource is designed to become:
+
+> A structured intelligence layer for ecommerce growth psychology.
+
+---
+
+# Future Possibilities
+
+- AI-assisted tagging
+- Creative trend prediction
+- Viral pattern clustering
+- Competitor creative intelligence
+- Attention heatmaps
+- Creative fatigue detection
+- Ecommerce conversion research
+- Ad intelligence workflows
+- Brand creative memory systems
+
+---
+
+# Core Principle
+
+> “Don’t just generate creatives.
+>
+> Understand the DNA of attention.”
