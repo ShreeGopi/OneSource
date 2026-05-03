@@ -19,6 +19,16 @@ The goal is simple:
 
 > Understand **why** certain creatives perform well — not just generate more content.
 
+Architecture We’ll Use
+Frontend
+Next.js
+Tailwind
+TypeScript
+Backend + DB
+Supabase
+Deployment
+Vercel later
+
 ---
 
 # Project Vision
