@@ -85,6 +85,18 @@ Cannot find module '@/lib/supabase'
 - TypeScript alias (@) not configured correctly
 - Fixes / Solutions
 
+## 2.
+### 2. Row Level Security (RLS) Error
+
+Error:
+new row violates row-level security policy for table "creatives"
+(HTTP 401)
+
+Cause:
+- Supabase blocks database operations by default when RLS is enabled
+- No policy was defined to allow inserts from frontend
+
+
 #### Fix —>  
 ```
 Updated tsconfig.json
@@ -96,6 +108,18 @@ Updated tsconfig.json
   "@/*": ["src/*"]
 }
 ```
+### Fix — Disabled RLS (for MVP)
+
+- Opened Supabase → Table Editor → creatives
+- Disabled Row Level Security (RLS)
+
+Reason:
+- No authentication system yet
+- Needed to allow frontend inserts during development
+
+Note:
+- This is temporary for MVP
+- Will re-enable RLS with proper policies later
 
 Also:
 
