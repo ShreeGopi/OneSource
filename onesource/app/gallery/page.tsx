@@ -14,6 +14,17 @@ export default function GalleryPage() {
   const [allHooks, setAllHooks] = useState<string[]>([]);
   const [allPlatforms, setAllPlatforms] = useState<string[]>([]);
 
+  const patternExplanations: Record<string, string> = {
+    "curiosity + before-after":
+      "Before-after creates strong visual contrast, while curiosity keeps users engaged.",
+    "urgency + problem-solution":
+      "Urgency pushes immediate action, while problem-solution clearly communicates value.",
+    "fear + problem-solution":
+      "Fear highlights risk, and problem-solution provides a clear fix.",
+    "aspiration + before-after":
+      "Aspiration shows desired outcome, while before-after makes transformation believable.",
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -101,7 +112,7 @@ export default function GalleryPage() {
   const topHook = getTop(hookCount);
   const topPlatform = getTop(platformCount);
 
-  // 🔥 PATTERN COMBINATIONS (WITH THRESHOLD)
+  // 🔥 PATTERN COMBINATIONS
   const patternCount: Record<string, number> = {};
 
   filtered.forEach((item) => {
@@ -114,10 +125,10 @@ export default function GalleryPage() {
   });
 
   const topPatterns = Object.entries(patternCount)
-    .filter(([_, count]) => count >= 2) // ✅ threshold
+    .filter(([_, count]) => count >= 2)
     .sort((a, b) => b[1] - a[1]);
 
-  // 🔥 PLATFORM PATTERNS (WITH THRESHOLD)
+  // 🔥 PLATFORM PATTERNS
   const platformPatterns: Record<string, Record<string, number>> = {};
 
   filtered.forEach((item) => {
@@ -131,7 +142,6 @@ export default function GalleryPage() {
     item.emotion_tags?.forEach((emotion: string) => {
       item.hook_types?.forEach((hook: string) => {
         const key = `${emotion} + ${hook}`;
-
         platformPatterns[platform][key] =
           (platformPatterns[platform][key] || 0) + 1;
       });
@@ -141,7 +151,7 @@ export default function GalleryPage() {
   const topPlatformPatterns = Object.entries(platformPatterns).map(
     ([platform, patterns]) => {
       const filteredPatterns = Object.entries(patterns)
-        .filter(([_, count]) => count >= 2) // ✅ threshold
+        .filter(([_, count]) => count >= 2)
         .sort((a, b) => b[1] - a[1]);
 
       return {
@@ -153,164 +163,146 @@ export default function GalleryPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Creative Gallery</h1>
+      <h1 className="text-2xl font-bold mb-2">Creative Gallery</h1>
+      <p className="text-sm text-gray-400 mb-6">
+        Explore repeating creative patterns across platforms.
+      </p>
 
-      {/* 🔥 INSIGHTS */}
-      <div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white shadow">
-        <h2 className="font-semibold mb-2 text-white text-lg"> 📊 Dataset Summary</h2>
-
-        <p className="text-sm">
-          Top Emotion: <span className="font-semibold">{topEmotion?.[0] || "-"}</span> ({topEmotion?.[1] || 0})
-        </p>
-
-        <p className="text-sm">
-          Top Hook: <span className="font-semibold">{topHook?.[0] || "-"}</span> ({topHook?.[1] || 0})
-        </p>
-
-        <p className="text-sm">
-          Top Platform: <span className="font-semibold">{topPlatform?.[0] || "-"}</span> ({topPlatform?.[1] || 0})
-        </p>
+      {/* 📊 INSIGHTS */}
+      <div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white">
+        <h2 className="font-semibold mb-2 text-lg">📊 Dataset Summary</h2>
+        <p>Top Emotion: {topEmotion?.[0]} ({topEmotion?.[1]})</p>
+        <p>Top Hook: {topHook?.[0]} ({topHook?.[1]})</p>
+        <p>Top Platform: {topPlatform?.[0]} ({topPlatform?.[1]})</p>
       </div>
 
-      {/* 🔥 TOP PATTERNS */}
-      <div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white shadow">
-        <h2 className="font-semibold mb-3 text-white text-lg">
+      {/* 🔥 PATTERNS */}
+      <div className="bg-[#111] border border-gray-800 p-4 rounded-xl mb-6">
+        <h2 className="font-semibold mb-3 text-lg text-white">
           🔥 Repeating Patterns
         </h2>
 
-        {topPatterns.length === 0 && (
-          <p className="text-sm text-gray-400">No strong patterns yet</p>
-        )}
-
-       {topPatterns.map(([pattern, count]) => {
+        {topPatterns.map(([pattern, count], index) => {
           const [emotion, hook] = pattern.split(" + ");
+          const explanation = patternExplanations[pattern];
+          const isStrong = index === 0;
 
           return (
-            <div key={pattern} className="mb-2">
+            <div
+              key={pattern}
+              className={`mb-4 p-3 rounded-lg ${
+                isStrong ? "bg-[#1a1a1a] border border-yellow-500" : "bg-[#111]"
+              }`}
+            >
+              <p className={`text-xs mb-1 ${isStrong ? "text-yellow-400" : "text-gray-500"}`}>
+                {isStrong ? "🔥 Strong Signal" : "⚪ Secondary Pattern"}
+              </p>
+
               <p className="text-sm text-white">
-                <span className="text-gray-400">Emotion:</span>{" "}
-                <span className="font-semibold">{emotion}</span>{" "}
-                <span className="text-gray-500">•</span>{" "}
-                <span className="text-gray-400">Hook:</span>{" "}
-                <span className="font-semibold">{hook}</span>{" "}
-                <span className="text-gray-400">({count})</span>
+                Emotion: <span className="font-semibold">{emotion}</span> • Hook:{" "}
+                <span className="font-semibold">{hook}</span> ({count})
               </p>
 
               <p className="text-xs text-gray-400">
-                ↳ Repeated across multiple creatives → likely common structure
-              </p>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* 🔥 PLATFORM PATTERNS/📱 Platform Insights */}
-      <div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white shadow">
-        <h2 className="font-semibold mb-3 text-gray-200">📱 Platform Insights</h2>
-
-       {topPlatformPatterns.map(({ platform, top }) => {
-          const emotion = top ? top[0].split(" + ")[0] : "";
-          const hook = top ? top[0].split(" + ")[1] : "";
-
-          return (
-            <div key={platform} className="mb-2">
-              <p className="text-sm">
-                <span className="font-semibold text-white">{platform}</span> →{" "}
-                {top ? (
-                  <>
-                    <span className="text-gray-400">Emotion:</span>{" "}
-                    <span className="font-semibold">{emotion}</span>{" "}
-                    <span className="text-gray-500">•</span>{" "}
-                    <span className="text-gray-400">Hook:</span>{" "}
-                    <span className="font-semibold">{hook}</span>{" "}
-                    <span className="text-gray-400">({top[1]})</span>
-                  </>
-                ) : (
-                  <span className="text-gray-400">No strong pattern yet</span>
-                )}
+                ↳ Repeated across multiple creatives
               </p>
 
-              {top && (
-                <p className="text-xs text-gray-400">
-                  ↳ Most repeated pattern on this platform
+              {explanation && (
+                <p className="text-xs text-gray-400 mt-1">
+                  💡 Why this works: {explanation}
                 </p>
               )}
             </div>
           );
         })}
+
+        <p className="text-xs text-gray-500 mt-2">
+          → Use these patterns as reference when creating creatives.
+        </p>
       </div>
 
-      {/* 🔽 FILTERS */}
-      <div className="flex gap-4 mb-6 flex-wrap">
-        <select
-          className="bg-gray-900 text-white border border-gray-700 px-3 py-2 rounded-md"
-          value={selectedEmotion}
-          onChange={(e) => setSelectedEmotion(e.target.value)}
-        >
-          <option value="">All Emotions</option>
-          {allEmotions.map((emotion) => (
-            <option key={emotion} value={emotion}>{emotion}</option>
-          ))}
-        </select>
+      {/* 📱 PLATFORM */}
+      <div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white">
+        <h2 className="font-semibold mb-3">📱 Platform Insights</h2>
 
-        <select
-          className="bg-gray-900 text-white border border-gray-700 px-3 py-2 rounded-md"
-          value={selectedHook}
-          onChange={(e) => setSelectedHook(e.target.value)}
-        >
-          <option value="">All Hooks</option>
-          {allHooks.map((hook) => (
-            <option key={hook} value={hook}>{hook}</option>
-          ))}
-        </select>
+        {topPlatformPatterns.map(({ platform, top }) => {
+          const emotion = top ? top[0].split(" + ")[0] : "";
+          const hook = top ? top[0].split(" + ")[1] : "";
 
-        <select
-          className="bg-gray-900 text-white border border-gray-700 px-3 py-2 rounded-md"
-          value={selectedPlatform}
-          onChange={(e) => setSelectedPlatform(e.target.value)}
-        >
-          <option value="">All Platforms</option>
-          {allPlatforms.map((platform) => (
-            <option key={platform} value={platform}>{platform}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* 🔽 GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {filtered.map((item) => (
-          <div key={item.id} className="border p-4 rounded">
-            {item.image_url && (
-              <img
-                src={item.image_url}
-                alt="creative"
-                className="w-full h-40 object-cover mb-2"
-              />
-            )}
-
-            <h2 className="font-semibold">{item.title}</h2>
-            <p className="text-sm text-gray-500">{item.brand}</p>
-
-            <p className="mt-2 text-sm">
-              <strong>Hook:</strong> {item.hook}
-            </p>
-
-            <p className="text-sm">
-              <strong>CTA:</strong> {item.cta}
-            </p>
-
-            <div className="mt-2 text-xs text-gray-600">
-              <p><strong>Emotion:</strong> {item.emotion_tags?.join(", ")}</p>
-              <p><strong>Hook Type:</strong> {item.hook_types?.join(", ")}</p>
-              <p><strong>Visual:</strong> {item.visual_styles?.join(", ")}</p>
+          return (
+            <div key={platform} className="mb-2">
+              <p>
+                <span className="font-semibold">{platform}</span> →{" "}
+                {top ? `${emotion} • ${hook} (${top[1]})` : "No strong pattern"}
+              </p>
             </div>
-
-            <p className="text-xs text-gray-400 mt-2">
-              {item.platform} • {item.niche}
-            </p>
-          </div>
-        ))}
+          );
+        })}
       </div>
+
+      {/* FILTERS */}
+      <div className="flex gap-4 mb-6">
+        <select onChange={(e) => setSelectedEmotion(e.target.value)}>
+          <option value="">All Emotions</option>
+          {allEmotions.map((e) => <option key={e}>{e}</option>)}
+        </select>
+
+        <select onChange={(e) => setSelectedHook(e.target.value)}>
+          <option value="">All Hooks</option>
+          {allHooks.map((h) => <option key={h}>{h}</option>)}
+        </select>
+
+        <select onChange={(e) => setSelectedPlatform(e.target.value)}>
+          <option value="">All Platforms</option>
+          {allPlatforms.map((p) => <option key={p}>{p}</option>)}
+        </select>
+      </div>
+
+    {/* 🔽 GRID */}
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+  {filtered.map((item) => (
+    <div key={item.id} className="border border-gray-800 bg-[#111] p-4 rounded-xl">
+      
+      {/* ✅ IMAGE (FIXED) */}
+      {item.image_url && (
+        <img
+          src={item.image_url}
+          alt="creative"
+          className="w-full h-40 object-cover mb-3 rounded-md"
+        />
+      )}
+
+      {/* TEXT CONTENT */}
+      <h2 className="font-semibold text-white">{item.title}</h2>
+      <p className="text-sm text-gray-400">{item.brand}</p>
+
+      <p className="mt-2 text-sm text-gray-300">
+        <strong>Hook:</strong> {item.hook}
+      </p>
+
+      <p className="text-sm text-gray-300">
+        <strong>CTA:</strong> {item.cta}
+      </p>
+
+      {/* TAGS */}
+      <div className="mt-2 text-xs text-gray-400 space-y-1">
+        <p>
+          <strong>Emotion:</strong> {item.emotion_tags?.join(", ")}
+        </p>
+        <p>
+          <strong>Hook Type:</strong> {item.hook_types?.join(", ")}
+        </p>
+        <p>
+          <strong>Visual:</strong> {item.visual_styles?.join(", ")}
+        </p>
+      </div>
+
+      <p className="text-xs text-gray-500 mt-3">
+        {item.platform} • {item.niche}
+      </p>
+    </div>
+  ))}
+</div>
     </div>
   );
 }
