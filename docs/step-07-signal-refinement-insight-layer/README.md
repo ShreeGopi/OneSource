@@ -160,4 +160,4 @@ a refined pattern layer that clearly shows:
 * what dominates
 * what is structurally consistent
 
-This forms the foundation for future intelligence layers.
+This forms the foundation for future intelligence layers...
