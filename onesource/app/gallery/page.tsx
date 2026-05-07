@@ -111,6 +111,11 @@ export default function GalleryPage() {
   const topEmotion = getTop(emotionCount);
   const topHook = getTop(hookCount);
   const topPlatform = getTop(platformCount);
+  const getStrengthLabel = (percentage: number) => {
+    if (percentage >= 60) return "Dominant";
+    if (percentage >= 30) return "Strong";
+    return "Weak";
+  };
 
   // 🔥 PATTERN COMBINATIONS
   const patternCount: Record<string, number> = {};
@@ -148,19 +153,136 @@ export default function GalleryPage() {
     });
   });
 
-  const topPlatformPatterns = Object.entries(platformPatterns).map(
-    ([platform, patterns]) => {
-      const filteredPatterns = Object.entries(patterns)
-        .filter(([_, count]) => count >= 2)
-        .sort((a, b) => b[1] - a[1]);
+const topPlatformPatterns = Object.entries(platformPatterns).map(
+  ([platform, patterns]) => {
+    const totalItems = filtered.filter(
+      (item) => item.platform === platform
+    ).length;
 
-      return {
-        platform,
-        top: filteredPatterns[0],
-      };
+    const filteredPatterns = Object.entries(patterns)
+      .filter(([_, count]) => count >= 2)
+      .sort((a, b) => b[1] - a[1]);
+
+    const top = filteredPatterns[0];
+
+    let percentage = 0;
+    let label = "";
+
+    if (top && totalItems > 0) {
+      percentage = Math.round((top[1] / totalItems) * 100);
+      label = getStrengthLabel(percentage);
     }
-  );
 
+    return {
+      platform,
+      top,
+      percentage,
+      label,
+    };
+  }
+);
+
+// 🔥 CROSS-PLATFORM COMPARISON
+
+const crossPlatformData = topPatterns.map(([pattern, _]) => {
+  const result: {
+    pattern: string;
+    platforms: {
+      platform: string;
+      percentage: number;
+      label: string;
+      count: number;
+    }[];
+  } = {
+    pattern,
+    platforms: [],
+  };
+
+  Object.keys(platformPatterns).forEach((platform) => {
+    const totalItems = filtered.filter(
+      (item) => item.platform === platform
+    ).length;
+
+    const count = platformPatterns[platform][pattern] || 0;
+
+    let percentage = 0;
+    let label = "";
+
+    if (totalItems > 0 && count > 0) {
+      percentage = Math.round((count / totalItems) * 100);
+      label = getStrengthLabel(percentage);
+    }
+
+    // ✅ FIRST push
+    result.platforms.push({
+      platform,
+      percentage,
+      label,
+      count,
+    });
+  });
+
+  // ✅ THEN sort (after loop)
+  result.platforms.sort((a, b) => b.percentage - a.percentage);
+
+  return result;
+});
+
+// 🧠 PATTERN CLUSTERS
+
+const patternClusters: Record<string, string[]> = {
+  Transformation: [
+    "before-after",
+    "transformation",
+    "results",
+  ],
+
+  ProblemSolving: [
+    "problem-solution",
+    "demonstration",
+  ],
+
+  AuthorityTrust: [
+    "authority",
+    "social-proof",
+  ],
+
+  ActionPressure: [
+    "urgency",
+    "scarcity",
+  ],
+};
+
+const clusterSignals: Record<
+  string,
+  {
+    count: number;
+    patterns: string[];
+  }
+> = {};
+
+topPatterns.forEach(([pattern, count]) => {
+  const hook = pattern.split(" + ")[1];
+
+  Object.entries(patternClusters).forEach(([cluster, hooks]) => {
+    if (hooks.includes(hook)) {
+      if (!clusterSignals[cluster]) {
+        clusterSignals[cluster] = {
+          count: 0,
+          patterns: [],
+        };
+      }
+
+      clusterSignals[cluster].count += count;
+
+      clusterSignals[cluster].patterns.push(pattern);
+    }
+  });
+});
+
+const sortedClusters = Object.entries(clusterSignals).sort(
+  (a, b) => b[1].count - a[1].count
+);
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-2">Creative Gallery</h1>
@@ -169,79 +291,183 @@ export default function GalleryPage() {
       </p>
 
       {/* 📊 INSIGHTS */}
-      <div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white">
+<div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white">
         <h2 className="font-semibold mb-2 text-lg">📊 Dataset Summary</h2>
         <p>Top Emotion: {topEmotion?.[0]} ({topEmotion?.[1]})</p>
         <p>Top Hook: {topHook?.[0]} ({topHook?.[1]})</p>
         <p>Top Platform: {topPlatform?.[0]} ({topPlatform?.[1]})</p>
-      </div>
+</div>
 
-      {/* 🔥 PATTERNS */}
-      <div className="bg-[#111] border border-gray-800 p-4 rounded-xl mb-6">
+{/* 🔥 PATTERNS */}
+<div className="bg-[#111] border border-gray-800 p-4 rounded-xl mb-6">
         <h2 className="font-semibold mb-3 text-lg text-white">
           🔥 Repeating Patterns
         </h2>
 
-        {topPatterns.map(([pattern, count], index) => {
-          const [emotion, hook] = pattern.split(" + ");
-          const explanation = patternExplanations[pattern];
-          const isStrong = index === 0;
+              {topPatterns.map(([pattern, count], index) => {
+                const [emotion, hook] = pattern.split(" + ");
+                const explanation = patternExplanations[pattern];
+                const isStrong = index === 0;
 
-          return (
-            <div
-              key={pattern}
-              className={`mb-4 p-3 rounded-lg ${
-                isStrong ? "bg-[#1a1a1a] border border-yellow-500" : "bg-[#111]"
-              }`}
-            >
-              <p className={`text-xs mb-1 ${isStrong ? "text-yellow-400" : "text-gray-500"}`}>
-                {isStrong ? "🔥 Strong Signal" : "⚪ Secondary Pattern"}
+                return (
+                  <div
+                    key={pattern}
+                    className={`mb-4 p-3 rounded-lg ${
+                      isStrong ? "bg-[#1a1a1a] border border-yellow-500" : "bg-[#111]"
+                    }`}
+                  >
+                    <p className={`text-xs mb-1 ${isStrong ? "text-yellow-400" : "text-gray-500"}`}>
+                      {isStrong ? "🔥 Strong Signal" : "⚪ Secondary Pattern"}
+                    </p>
+
+                    <p className="text-sm text-white">
+                      Emotion: <span className="font-semibold">{emotion}</span> • Hook:{" "}
+                      <span className="font-semibold">{hook}</span> ({count})
+                    </p>
+
+                    <p className="text-xs text-gray-400">
+                      ↳ Repeated across multiple creatives
+                    </p>
+
+                    {explanation && (
+                      <p className="text-xs text-gray-400 mt-1">
+                        💡 Why this works: {explanation}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+
+              <p className="text-xs text-gray-500 mt-2">
+                → Use these patterns as reference when creating creatives.
               </p>
+</div>
 
-              <p className="text-sm text-white">
-                Emotion: <span className="font-semibold">{emotion}</span> • Hook:{" "}
-                <span className="font-semibold">{hook}</span> ({count})
+{/* 📱 PLATFORM */}            
+<div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white shadow">
+            <h2 className="font-semibold mb-3 text-gray-200">
+              📱 Platform Insights
+            </h2>
+
+              {topPlatformPatterns.map(({ platform, top, percentage, label }) => {
+                const emotion = top ? top[0].split(" + ")[0] : "";
+                const hook = top ? top[0].split(" + ")[1] : "";
+
+                return (
+                  <div key={platform} className="mb-3">
+                    <p className="text-sm">
+                      <span className="font-semibold text-white">{platform}</span> →{" "}
+                      {top ? (
+                        <>
+                          <span className="text-gray-400">Emotion:</span>{" "}
+                          <span className="font-semibold">{emotion}</span>{" "}
+                          <span className="text-gray-500">•</span>{" "}
+                          <span className="text-gray-400">Hook:</span>{" "}
+                          <span className="font-semibold">{hook}</span>{" "}
+                          <span className="text-gray-400">({top[1]})</span>
+                        </>
+                      ) : (
+                        <span className="text-gray-400">
+                          No strong pattern yet
+                        </span>
+                      )}
+                    </p>
+
+                    {top && (
+                      <>
+                        <p className="text-xs text-gray-400">
+                          ↳ {percentage}% of creatives on this platform
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          ↳ {label} pattern
+                        </p>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+</div>
+
+{/* ⚖️ CROSS-PLATFORM COMPARISON */}
+<div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white shadow">
+  <h2 className="font-semibold mb-3 text-gray-200">
+    ⚖️ Cross-Platform Comparison
+  </h2>
+
+  {crossPlatformData.length > 0 ? (
+    crossPlatformData.map(({ pattern, platforms }) => {
+      const [emotion, hook] = pattern.split(" + ");
+
+      return (
+        <div key={pattern} className="mb-4">
+          <p className="text-sm font-semibold text-white mb-1">
+            Emotion: {emotion} • Hook: {hook}
+          </p>
+
+          <div className="text-xs text-gray-400 space-y-1">
+            {platforms.map(({ platform, percentage, label, count }) => (
+              <p key={platform}>
+                {platform} →{" "}
+                {count >= 2 ? (
+                  <>
+                    {percentage}% ({label})
+                  </>
+                ) : (
+                  "Low presence (< 2 occurrences)"
+                )}
               </p>
+            ))}
+          </div>
+        </div>
+      );
+    })
+  ) : (
+    <p className="text-sm text-gray-500">No comparable patterns yet</p>
+  )}
+</div>
 
-              <p className="text-xs text-gray-400">
-                ↳ Repeated across multiple creatives
-              </p>
+{/* 🧠 BEHAVIOR CLUSTERS */}
+<div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white shadow">
+  <h2 className="font-semibold mb-3 text-gray-200">
+    🧠 Behavior Clusters
+  </h2>
 
-              {explanation && (
-                <p className="text-xs text-gray-400 mt-1">
-                  💡 Why this works: {explanation}
-                </p>
-              )}
-            </div>
-          );
-        })}
-
-        <p className="text-xs text-gray-500 mt-2">
-          → Use these patterns as reference when creating creatives.
+  {sortedClusters.length > 0 ? (
+    sortedClusters.map(([cluster, data]) => (
+      <div
+        key={cluster}
+        className="mb-4 border border-gray-800 rounded-lg p-3"
+      >
+        <p className="text-sm font-semibold text-white">
+          {cluster} Cluster
         </p>
-      </div>
 
-      {/* 📱 PLATFORM */}
-      <div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white">
-        <h2 className="font-semibold mb-3">📱 Platform Insights</h2>
+        <p className="text-xs text-gray-400 mt-1">
+          Total Signal Strength: {data.count}
+        </p>
 
-        {topPlatformPatterns.map(({ platform, top }) => {
-          const emotion = top ? top[0].split(" + ")[0] : "";
-          const hook = top ? top[0].split(" + ")[1] : "";
+        <div className="mt-2 text-xs text-gray-500">
+          {data.patterns.map((pattern) => {
+            const [emotion, hook] = pattern.split(" + ");
 
-          return (
-            <div key={platform} className="mb-2">
-              <p>
-                <span className="font-semibold">{platform}</span> →{" "}
-                {top ? `${emotion} • ${hook} (${top[1]})` : "No strong pattern"}
+            return (
+              <p key={pattern}>
+                • Emotion: {emotion} → Hook: {hook}
               </p>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
+    ))
+  ) : (
+    <p className="text-sm text-gray-500">
+      No cluster signals yet
+    </p>
+  )}
+</div>
 
-      {/* FILTERS */}
-      <div className="flex gap-4 mb-6">
+{/* FILTERS */}
+<div className="flex gap-4 mb-6">
         <select onChange={(e) => setSelectedEmotion(e.target.value)}>
           <option value="">All Emotions</option>
           {allEmotions.map((e) => <option key={e}>{e}</option>)}
@@ -256,9 +482,9 @@ export default function GalleryPage() {
           <option value="">All Platforms</option>
           {allPlatforms.map((p) => <option key={p}>{p}</option>)}
         </select>
-      </div>
+</div>
 
-    {/* 🔽 GRID */}
+{/* 🔽 GRID */}
 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
   {filtered.map((item) => (
     <div key={item.id} className="border border-gray-800 bg-[#111] p-4 rounded-xl">
