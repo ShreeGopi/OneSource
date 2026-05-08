@@ -12,27 +12,52 @@ export default function AdminPage() {
   const [hook, setHook] = useState("");
   const [cta, setCta] = useState("");
   const [notes, setNotes] = useState("");
+  const [emotionTags, setEmotionTags] = useState<string[]>([]);
+  const [hookTypes, setHookTypes] = useState<string[]>([]);
+  const [visualStyles, setVisualStyles] = useState<string[]>([]);
+  
+  const EMOTION_OPTIONS = [
+  "curiosity",
+  "urgency",
+  "fear",
+  "aspiration",
+  "status",
+  "trust",
+  "scarcity",
+  "hope",
+  "satisfaction",
+  ];
+  const HOOK_OPTIONS = [
+    "before-after",
+    "problem-solution",
+    "comparison",
+    "authority",
+    "social-proof",
+    "demonstration",
+    "urgency",
+  ];
+  const VISUAL_OPTIONS = [
+  "ugc",
+  "cinematic",
+  "clean",
+  "minimal",
+  "luxury",
+  ];
 
-  const [emotionTags, setEmotionTags] = useState("");
-  const [hookTypes, setHookTypes] = useState("");
-  const [visualStyles, setVisualStyles] = useState("");
 
-  // 🔥 CLEAN FUNCTION (STEP 9 CORE)
-  const cleanTags = (input: string) => {
-    return Array.from(
-      new Set(
-        input
-          .split(",")
-          .map((tag) => tag.trim().toLowerCase())
-          .filter((tag) => tag !== "")
-      )
-    );
+    const toggleSelection = (
+    value: string,
+    current: string[],
+    setter: React.Dispatch<React.SetStateAction<string[]>>
+  ) => {
+    if (current.includes(value)) {
+      setter(current.filter((item) => item !== value));
+    } else {
+      setter([...current, value]);
+    }
   };
 
   const handleSubmit = async () => {
-    const cleanedEmotionTags = cleanTags(emotionTags);
-    const cleanedHookTypes = cleanTags(hookTypes);
-    const cleanedVisualStyles = cleanTags(visualStyles);
 
     const { data, error } = await supabase.from("creatives").insert([
       {
@@ -44,9 +69,9 @@ export default function AdminPage() {
         hook,
         cta,
         notes,
-        emotion_tags: cleanedEmotionTags,
-        hook_types: cleanedHookTypes,
-        visual_styles: cleanedVisualStyles,
+        emotion_tags: emotionTags,
+        hook_types: hookTypes,
+        visual_styles: visualStyles,
       },
     ]);
 
@@ -64,9 +89,9 @@ export default function AdminPage() {
       setHook("");
       setCta("");
       setNotes("");
-      setEmotionTags("");
-      setHookTypes("");
-      setVisualStyles("");
+      setEmotionTags([]);
+      setHookTypes([]);
+      setVisualStyles([]);
 
       console.log(data);
     }
@@ -111,26 +136,71 @@ export default function AdminPage() {
         onChange={(e) => setImageUrl(e.target.value)}
       />
 
-      <input
-        className="w-full border p-2"
-        placeholder="Emotion Tags (comma separated)"
-        value={emotionTags}
-        onChange={(e) => setEmotionTags(e.target.value)}
-      />
+      <div className="mb-4">
+      <p className="text-sm font-semibold mb-2">Emotion Tags</p>
+      <div className="flex flex-wrap gap-2">
+        {EMOTION_OPTIONS.map((emotion) => (
+          <button
+            type="button"
+            key={emotion}
+            onClick={() =>
+              toggleSelection(emotion, emotionTags, setEmotionTags)
+            }
+            className={`px-3 py-1 rounded-full text-sm border ${
+              emotionTags.includes(emotion)
+                ? "bg-white text-black"
+                : "bg-black text-white border-gray-700"
+            }`}
+          >
+            {emotion}
+          </button>
+        ))}
+        </div>
+        </div>
 
-      <input
-        className="w-full border p-2"
-        placeholder="Hook Types (comma separated)"
-        value={hookTypes}
-        onChange={(e) => setHookTypes(e.target.value)}
-      />
+      <div className="mb-4">
+            <p className="text-sm font-semibold mb-2">Hook Types</p>
+            <div className="flex flex-wrap gap-2">
+              {HOOK_OPTIONS.map((hook) => (
+                <button
+                  type="button"
+                  key={hook}
+                  onClick={() =>
+                    toggleSelection(hook, hookTypes, setHookTypes)
+                  }
+                  className={`px-3 py-1 rounded-full text-sm border ${
+                    hookTypes.includes(hook)
+                      ? "bg-white text-black"
+                      : "bg-black text-white border-gray-700"
+                  }`}
+                >
+                  {hook}
+                </button>
+              ))}
+        </div>
+        </div>
 
-      <input
-        className="w-full border p-2"
-        placeholder="Visual Styles (comma separated)"
-        value={visualStyles}
-        onChange={(e) => setVisualStyles(e.target.value)}
-      />
+        <div className="mb-4">
+        <p className="text-sm font-semibold mb-2">Visual Styles</p>
+        <div className="flex flex-wrap gap-2">
+            {VISUAL_OPTIONS.map((visual) => (
+              <button
+                type="button"
+                key={visual}
+                onClick={() =>
+                  toggleSelection(visual, visualStyles, setVisualStyles)
+                }
+                className={`px-3 py-1 rounded-full text-sm border ${
+                  visualStyles.includes(visual)
+                    ? "bg-white text-black"
+                    : "bg-black text-white border-gray-700"
+                }`}
+              >
+                {visual}
+              </button>
+            ))}
+          </div>
+        </div>
 
       <textarea
         className="w-full border p-2"

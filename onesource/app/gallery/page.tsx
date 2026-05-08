@@ -9,10 +9,22 @@ export default function GalleryPage() {
   const [selectedEmotion, setSelectedEmotion] = useState("");
   const [selectedHook, setSelectedHook] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("");
-
+  const [showAllStructures, setShowAllStructures] =
+    useState(false);
   const [allEmotions, setAllEmotions] = useState<string[]>([]);
   const [allHooks, setAllHooks] = useState<string[]>([]);
   const [allPlatforms, setAllPlatforms] = useState<string[]>([]);
+  const VALID_EMOTIONS = [
+  "curiosity",
+  "urgency",
+  "fear",
+  "aspiration",
+  "status",
+  "trust",
+  "scarcity",
+  "hope",
+  "satisfaction",
+];
 
   const patternExplanations: Record<string, string> = {
     "curiosity + before-after":
@@ -117,11 +129,25 @@ export default function GalleryPage() {
     return "Weak";
   };
 
+    const getRelationshipStrength = (count: number) => {
+  if (count >= 6) return "Dominant Relationship";
+  if (count >= 4) return "Strong Relationship";
+  if (count >= 2) return "Emerging Relationship";
+
+  return "Weak Relationship";
+};
+
   // 🔥 PATTERN COMBINATIONS
   const patternCount: Record<string, number> = {};
 
   filtered.forEach((item) => {
-    item.emotion_tags?.forEach((emotion: string) => {
+    item.emotion_tags
+  ?.filter((emotion: string) =>
+    VALID_EMOTIONS.includes(
+      emotion.toLowerCase().trim()
+    )
+  )
+  .forEach((emotion: string) => {
       item.hook_types?.forEach((hook: string) => {
         const key = `${emotion} + ${hook}`;
         patternCount[key] = (patternCount[key] || 0) + 1;
@@ -144,7 +170,13 @@ export default function GalleryPage() {
       platformPatterns[platform] = {};
     }
 
-    item.emotion_tags?.forEach((emotion: string) => {
+    item.emotion_tags
+  ?.filter((emotion: string) =>
+    VALID_EMOTIONS.includes(
+      emotion.toLowerCase().trim()
+    )
+  )
+  .forEach((emotion: string) => {
       item.hook_types?.forEach((hook: string) => {
         const key = `${emotion} + ${hook}`;
         platformPatterns[platform][key] =
@@ -228,6 +260,64 @@ const crossPlatformData = topPatterns.map(([pattern, _]) => {
   return result;
 });
 
+const HOOK_BEHAVIOR_MAP: Record<string, string> = {
+  "before-after": "Transformation",
+  "problem-solution": "ProblemSolving",
+  "comparison": "Evaluation",
+  "authority": "Trust",
+  "social-proof": "Trust",
+  "demonstration": "Demonstration",
+  "urgency": "ActionPressure",
+};
+
+const EMOTION_BEHAVIOR_MAP: Record<string, string> = {
+  curiosity: "AttentionSeeking",
+  urgency: "ActionPressure",
+  fear: "RiskAvoidance",
+  aspiration: "Transformation",
+  status: "StatusSeeking",
+  trust: "Trust",
+  scarcity: "LossAvoidance",
+  hope: "Transformation",
+  satisfaction: "Reward",
+};
+
+
+
+
+const taxonomyClusters: Record<
+  string,
+  {
+    count: number;
+    patterns: string[];
+  }
+> = {};
+
+topPatterns.forEach(([pattern, count]) => {
+  const [emotion, hook] = pattern.split(" + ");
+
+  const emotionBehavior = EMOTION_BEHAVIOR_MAP[emotion];
+  const hookBehavior = HOOK_BEHAVIOR_MAP[hook];
+
+  const clusterKey = `${emotionBehavior} × ${hookBehavior}`;
+
+  if (!taxonomyClusters[clusterKey]) {
+    taxonomyClusters[clusterKey] = {
+      count: 0,
+      patterns: [],
+    };
+  }
+
+  taxonomyClusters[clusterKey].count += count;
+
+  taxonomyClusters[clusterKey].patterns.push(
+    `${emotion} → ${hook}`
+  );
+});
+
+const sortedTaxonomyClusters = Object.entries(taxonomyClusters).sort(
+  (a, b) => b[1].count - a[1].count
+);
 // 🧠 PATTERN CLUSTERS
 
 const patternClusters: Record<string, string[]> = {
@@ -283,6 +373,311 @@ topPatterns.forEach(([pattern, count]) => {
 const sortedClusters = Object.entries(clusterSignals).sort(
   (a, b) => b[1].count - a[1].count
 );
+
+// 🧠 RELATIONSHIP LAYER
+
+const emotionHookRelations: Record<string, number> = {};
+const hookVisualRelations: Record<string, number> = {};
+const emotionCtaRelations: Record<string, number> = {};
+const nichePatternRelations: Record<string, number> = {};
+
+filtered.forEach((item) => {
+
+  // Emotion ↔ Hook
+  item.emotion_tags
+  ?.filter((emotion: string) =>
+    VALID_EMOTIONS.includes(
+      emotion.toLowerCase().trim()
+    )
+  )
+  .forEach((emotion: string) => {
+    item.hook_types?.forEach((hook: string) => {
+      const key = `${emotion} ↔ ${hook}`;
+
+      emotionHookRelations[key] =
+        (emotionHookRelations[key] || 0) + 1;
+    });
+  });
+
+  // Hook ↔ Visual
+  item.hook_types?.forEach((hook: string) => {
+    item.visual_styles?.forEach((visual: string) => {
+      const key = `${hook} ↔ ${visual}`;
+
+      hookVisualRelations[key] =
+        (hookVisualRelations[key] || 0) + 1;
+    });
+  });
+
+  // Emotion ↔ CTA
+  item.emotion_tags
+  ?.filter((emotion: string) =>
+    VALID_EMOTIONS.includes(
+      emotion.toLowerCase().trim()
+    )
+  )
+  .forEach((emotion: string) => {
+    if (item.cta) {
+      const key = `${emotion} ↔ ${item.cta}`;
+
+      emotionCtaRelations[key] =
+        (emotionCtaRelations[key] || 0) + 1;
+    }
+  });
+
+  // Niche ↔ Pattern
+  item.emotion_tags
+  ?.filter((emotion: string) =>
+    VALID_EMOTIONS.includes(
+      emotion.toLowerCase().trim()
+    )
+  )
+  .forEach((emotion: string) => {
+    item.hook_types?.forEach((hook: string) => {
+      const pattern = `${emotion} + ${hook}`;
+
+      const key = `${item.niche} ↔ ${pattern}`;
+
+      nichePatternRelations[key] =
+        (nichePatternRelations[key] || 0) + 1;
+    });
+  });
+
+});
+
+const sortedEmotionHookRelations = Object.entries(
+  emotionHookRelations
+)
+  .filter(([_, count]) => count >= 2)
+  .sort((a, b) => b[1] - a[1]);
+
+const sortedHookVisualRelations = Object.entries(
+  hookVisualRelations
+)
+  .filter(([_, count]) => count >= 2)
+  .sort((a, b) => b[1] - a[1]);
+
+const sortedEmotionCtaRelations = Object.entries(
+  emotionCtaRelations
+)
+  .filter(([_, count]) => count >= 2)
+  .sort((a, b) => b[1] - a[1]);
+
+const sortedNichePatternRelations = Object.entries(
+  nichePatternRelations
+)
+  .filter(([_, count]) => count >= 2)
+  .sort((a, b) => b[1] - a[1]);
+
+  // 🧠 RELATIONSHIP ENGINE
+
+type RelationshipRecord = {
+  type: string;
+  left: string;
+  right: string;
+  count: number;
+};
+
+const relationships: RelationshipRecord[] = [];
+
+const relationshipMap: Record<string, number> = {};
+
+// 🔥 Emotion ↔ Hook
+
+filtered.forEach((item) => {
+  item.emotion_tags
+  ?.filter((emotion: string) =>
+    VALID_EMOTIONS.includes(
+      emotion.toLowerCase().trim()
+    )
+  )
+  .forEach((emotion: string) => {
+    item.hook_types?.forEach((hook: string) => {
+      const key = `Emotion-Hook::${emotion}::${hook}`;
+
+      relationshipMap[key] =
+        (relationshipMap[key] || 0) + 1;
+    });
+  });
+});
+
+// 🔥 Hook ↔ Visual
+
+filtered.forEach((item) => {
+  item.hook_types?.forEach((hook: string) => {
+    item.visual_styles?.forEach((visual: string) => {
+      const key = `Hook-Visual::${hook}::${visual}`;
+
+      relationshipMap[key] =
+        (relationshipMap[key] || 0) + 1;
+    });
+  });
+});
+
+// 🔥 Emotion ↔ CTA
+
+filtered.forEach((item) => {
+  item.emotion_tags
+  ?.filter((emotion: string) =>
+    VALID_EMOTIONS.includes(
+      emotion.toLowerCase().trim()
+    )
+  )
+  .forEach((emotion: string) => {
+    if (!item.cta) return;
+
+    const key = `Emotion-CTA::${emotion}::${item.cta}`;
+
+    relationshipMap[key] =
+      (relationshipMap[key] || 0) + 1;
+  });
+});
+
+// 🔥 Niche ↔ Pattern
+
+filtered.forEach((item) => {
+  item.emotion_tags
+  ?.filter((emotion: string) =>
+    VALID_EMOTIONS.includes(
+      emotion.toLowerCase().trim()
+    )
+  )
+  .forEach((emotion: string) => {
+    item.hook_types?.forEach((hook: string) => {
+      const pattern = `${emotion} + ${hook}`;
+
+      const key = `Niche-Pattern::${item.niche}::${pattern}`;
+
+      relationshipMap[key] =
+        (relationshipMap[key] || 0) + 1;
+    });
+  });
+});
+
+// 🔥 STRUCTURE RELATIONSHIPS
+
+Object.entries(relationshipMap).forEach(([key, count]) => {
+  if (count < 2) return;
+
+  const [type, left, right] = key.split("::");
+
+  relationships.push({
+    type,
+    left,
+    right,
+    count,
+  });
+});
+
+// 🔥 GROUPED RELATIONSHIPS
+
+const groupedRelationships: Record<
+  string,
+  RelationshipRecord[]
+> = {};
+
+relationships.forEach((relationship) => {
+  if (!groupedRelationships[relationship.type]) {
+    groupedRelationships[relationship.type] = [];
+  }
+
+  groupedRelationships[relationship.type].push(
+    relationship
+  );
+});
+
+// 🧠 REINFORCED ATTENTION STRUCTURES
+
+type ReinforcedStructure = {
+  emotion: string;
+  hooks: Record<string, number>;
+  visuals: Record<string, number>;
+  ctas: Record<string, number>;
+  niches: Record<string, number>;
+  totalStrength: number;
+};
+
+const reinforcedStructures: Record<string, ReinforcedStructure> = {};
+
+filtered.forEach((item) => {
+ item.emotion_tags
+  ?.filter((emotion: string) =>
+    VALID_EMOTIONS.includes(
+      emotion.toLowerCase().trim()
+    )
+  )
+  .forEach((emotion: string) => {
+    if (!reinforcedStructures[emotion]) {
+      reinforcedStructures[emotion] = {
+        emotion,
+        hooks: {},
+        visuals: {},
+        ctas: {},
+        niches: {},
+        totalStrength: 0,
+      };
+    }
+
+    // hooks
+    item.hook_types?.forEach((hook: string) => {
+      reinforcedStructures[emotion].hooks[hook] =
+        (reinforcedStructures[emotion].hooks[hook] || 0) + 1;
+
+      reinforcedStructures[emotion].totalStrength += 1;
+    });
+
+    // visuals
+    item.visual_styles?.forEach((visual: string) => {
+      reinforcedStructures[emotion].visuals[visual] =
+        (reinforcedStructures[emotion].visuals[visual] || 0) + 1;
+
+      reinforcedStructures[emotion].totalStrength += 1;
+    });
+
+    // CTA
+    if (item.cta) {
+      reinforcedStructures[emotion].ctas[item.cta] =
+        (reinforcedStructures[emotion].ctas[item.cta] || 0) + 1;
+
+      reinforcedStructures[emotion].totalStrength += 1;
+    }
+
+    // niche
+    if (item.niche) {
+      reinforcedStructures[emotion].niches[item.niche] =
+        (reinforcedStructures[emotion].niches[item.niche] || 0) + 1;
+
+      reinforcedStructures[emotion].totalStrength += 1;
+    }
+  });
+});
+
+const sortedReinforcedStructures = Object.values(
+  reinforcedStructures
+).sort((a, b) => b.totalStrength - a.totalStrength);
+
+const MIN_STRUCTURE_STRENGTH = 10;
+
+const filteredReinforcedStructures =
+  sortedReinforcedStructures.filter(
+    (structure) =>
+      structure.totalStrength >=
+      MIN_STRUCTURE_STRENGTH
+  );
+
+const visibleStructures = showAllStructures
+  ? sortedReinforcedStructures
+  : filteredReinforcedStructures;
+
+const getTopRelationships = (
+  obj: Record<string, number>,
+  limit = 3
+) => {
+  return Object.entries(obj)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit);
+};
+
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-2">Creative Gallery</h1>
@@ -426,6 +821,45 @@ const sortedClusters = Object.entries(clusterSignals).sort(
   )}
 </div>
 
+{/* 🧠 TAXONOMY RELATIONSHIPS */}
+<div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white shadow">
+  <h2 className="font-semibold mb-3 text-gray-200">
+    🧠 Behavioral Taxonomy
+  </h2>
+
+  {sortedTaxonomyClusters.length > 0 ? (
+    sortedTaxonomyClusters.map(([cluster, data]) => (
+      <div
+        key={cluster}
+        className="mb-4 border border-gray-800 rounded-xl p-3"
+      >
+        <p className="text-sm font-semibold text-white">
+          {cluster}
+        </p>
+
+        <p className="text-xs text-gray-400 mt-1">
+          Total Structural Strength: {data.count}
+        </p>
+
+        <div className="mt-2 space-y-1">
+          {data.patterns.map((pattern) => (
+            <p
+              key={pattern}
+              className="text-xs text-gray-500"
+            >
+              • {pattern}
+            </p>
+          ))}
+        </div>
+      </div>
+    ))
+  ) : (
+    <p className="text-sm text-gray-500">
+      No taxonomy relationships yet
+    </p>
+  )}
+</div>
+
 {/* 🧠 BEHAVIOR CLUSTERS */}
 <div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white shadow">
   <h2 className="font-semibold mb-3 text-gray-200">
@@ -462,6 +896,150 @@ const sortedClusters = Object.entries(clusterSignals).sort(
   ) : (
     <p className="text-sm text-gray-500">
       No cluster signals yet
+    </p>
+  )}
+</div>
+
+{/* 🧠 RELATIONSHIP FOUNDATION */} {/* 🧠 RELATIONSHIP INTELLIGENCE */}
+<div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white shadow">
+  <h2 className="font-semibold mb-3 text-gray-200">
+    🧠 Relationship Intelligence
+  </h2>
+
+  {Object.entries(groupedRelationships).map(
+    ([type, items]) => (
+      <div key={type} className="mb-5">
+        <p className="text-sm font-semibold text-white mb-2">
+          {type}
+        </p>
+
+        <div className="space-y-1">
+          {items
+            .sort((a, b) => b.count - a.count)
+            .map((item) => (
+              <p
+                key={`${item.left}-${item.right}`}
+                className="text-xs text-gray-400"
+              >
+                {item.left} ↔ {item.right} ({item.count})
+              </p>
+            ))}
+        </div>
+      </div>
+    )
+  )}
+</div>
+
+{/* 🧠 REINFORCED ATTENTION STRUCTURES */}
+<div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white shadow">
+  <h2 className="font-semibold mb-3 text-gray-200">
+    🧠 Reinforced Attention Structures
+  </h2>
+        <div className="mb-4">
+          <button
+            onClick={() =>
+              setShowAllStructures(
+                !showAllStructures
+              )
+            }
+            className="text-xs px-3 py-1 rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700"
+          >
+            {showAllStructures
+              ? "Show Strong Signals Only"
+              : "Show All Structures"}
+          </button>
+        </div>
+
+  {visibleStructures.length > 0 ? (
+    visibleStructures.map((structure) => (
+      <div
+        key={structure.emotion}
+        className="mb-4 border border-gray-800 rounded-xl p-4"
+      >
+        <p className="text-sm font-semibold text-white capitalize">
+          Core Emotion: {structure.emotion}
+        </p>
+
+        <p className="text-xs text-gray-400 mt-1">
+          Total Reinforcement Strength: {structure.totalStrength}
+        </p>
+
+        {/* Hooks */}
+        <div className="mt-3">
+          <p className="text-xs text-gray-500 mb-1">
+            Frequently appears with hooks:
+          </p>
+
+          {getTopRelationships(structure.hooks).map(
+            ([hook, count]) => (
+              <p
+                key={hook}
+                className="text-xs text-gray-400"
+              >
+                • {hook} ({count})
+              </p>
+            )
+          )}
+        </div>
+
+        {/* Visuals */}
+        <div className="mt-3">
+          <p className="text-xs text-gray-500 mb-1">
+            Frequently appears with visuals:
+          </p>
+
+          {getTopRelationships(structure.visuals).map(
+            ([visual, count]) => (
+              <p
+                key={visual}
+                className="text-xs text-gray-400"
+              >
+                • {visual} ({count})
+              </p>
+            )
+          )}
+        </div>
+
+        {/* CTA */}
+        <div className="mt-3">
+          <p className="text-xs text-gray-500 mb-1">
+            Frequently appears with CTA:
+          </p>
+
+          {getTopRelationships(structure.ctas).map(
+            ([cta, count]) => (
+              <p
+                key={cta}
+                className="text-xs text-gray-400"
+              >
+                • {cta} ({count})
+              </p>
+            )
+          )}
+        </div>
+
+        {/* Niches */}
+        <div className="mt-3">
+          <p className="text-xs text-gray-500 mb-1">
+            Frequently appears with niches:
+          </p>
+
+          {getTopRelationships(structure.niches).map(
+            ([niche, count]) => (
+              <p
+                key={niche}
+                className="text-xs text-gray-400"
+              >
+                • {niche} ({count})
+              </p>
+            )
+          )}
+        </div>
+      </div>
+    ))
+  ) : (
+    <p className="text-sm text-gray-500">
+      No reinforced structures yet
     </p>
   )}
 </div>
