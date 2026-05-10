@@ -1,1112 +1,854 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+
 import { supabase } from "@/lib/supabase";
 
-export default function GalleryPage() {
-  const [creatives, setCreatives] = useState<any[]>([]);
+import { buildSignalExploration } from "@/lib/intelligence/signalExploration";
+import { buildPatternExploration } from "@/lib/intelligence/exploration";
+import { buildIntelligence } from "@/lib/intelligence";
 
-  const [selectedEmotion, setSelectedEmotion] = useState("");
-  const [selectedHook, setSelectedHook] = useState("");
-  const [selectedPlatform, setSelectedPlatform] = useState("");
+import {
+  getRelationshipStrength,
+} from "@/lib/config/thresholds";
+
+import {
+  getTopEntries,
+} from "@/lib/utils/aggregation";
+
+import { Creative } from "@/lib/types/creative";
+
+const patternExplanations: Record<string, string> = {
+  "curiosity + before-after":
+    "Before-after creates strong visual contrast while curiosity sustains attention.",
+  "urgency + problem-solution":
+    "Urgency accelerates action while problem-solution clarifies value.",
+  "fear + problem-solution":
+    "Fear introduces risk while problem-solution resolves uncertainty.",
+  "aspiration + before-after":
+    "Aspiration visualizes transformation and outcome progression.",
+};
+
+
+export default function GalleryPage() {
+  const [creatives, setCreatives] = useState<Creative[]>([]);
+  const [signalExplorer, setSignalExplorer] =
+    useState<{
+      type: string;
+      value: string;
+    } | null>(null);
+  const [selectedPattern, setSelectedPattern] =
+    useState<string | null>(null);
+
+  const [selectedEmotion, setSelectedEmotion] =
+    useState("");
+
+  const [selectedHook, setSelectedHook] =
+    useState("");
+
+  const [selectedPlatform, setSelectedPlatform] =
+    useState("");
+
   const [showAllStructures, setShowAllStructures] =
     useState(false);
-  const [allEmotions, setAllEmotions] = useState<string[]>([]);
-  const [allHooks, setAllHooks] = useState<string[]>([]);
-  const [allPlatforms, setAllPlatforms] = useState<string[]>([]);
-  const VALID_EMOTIONS = [
-  "curiosity",
-  "urgency",
-  "fear",
-  "aspiration",
-  "status",
-  "trust",
-  "scarcity",
-  "hope",
-  "satisfaction",
-];
 
-  const patternExplanations: Record<string, string> = {
-    "curiosity + before-after":
-      "Before-after creates strong visual contrast, while curiosity keeps users engaged.",
-    "urgency + problem-solution":
-      "Urgency pushes immediate action, while problem-solution clearly communicates value.",
-    "fear + problem-solution":
-      "Fear highlights risk, and problem-solution provides a clear fix.",
-    "aspiration + before-after":
-      "Aspiration shows desired outcome, while before-after makes transformation believable.",
-  };
+  const [allEmotions, setAllEmotions] =
+    useState<string[]>([]);
+
+  const [allHooks, setAllHooks] =
+    useState<string[]>([]);
+
+  const [allPlatforms, setAllPlatforms] =
+    useState<string[]>([]);
 
   useEffect(() => {
-    fetchData();
+    const fetchData = async () => {
+      const { data, error } = await supabase
+        .from("creatives")
+        .select("*")
+        .order("created_at", {
+          ascending: false,
+        });
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      const creativesData = data || [];
+
+      setCreatives(creativesData);
+
+      const emotions = new Set<string>();
+      const hooks = new Set<string>();
+      const platforms = new Set<string>();
+
+      creativesData.forEach((item) => {
+        item.emotion_tags?.forEach((tag: string) =>
+          emotions.add(tag)
+        );
+
+        item.hook_types?.forEach((tag: string) =>
+          hooks.add(tag)
+        );
+
+        if (item.platform) {
+          platforms.add(item.platform);
+        }
+      });
+
+      setAllEmotions(Array.from(emotions));
+      setAllHooks(Array.from(hooks));
+      setAllPlatforms(Array.from(platforms));
+    };
+
+    void fetchData();
   }, []);
 
-  const fetchData = async () => {
-    const { data, error } = await supabase
-      .from("creatives")
-      .select("*")
-      .order("created_at", { ascending: false });
+  // FILTERS
 
-    if (error) {
-      console.error(error);
-      return;
-    }
+  const filtered = useMemo(() => {
+    return creatives.filter((item) => {
+      const matchEmotion = selectedEmotion
+        ? item.emotion_tags?.includes(selectedEmotion)
+        : true;
 
-    const creativesData = data || [];
-    setCreatives(creativesData);
+      const matchHook = selectedHook
+        ? item.hook_types?.includes(selectedHook)
+        : true;
 
-    const emotionsSet = new Set<string>();
-    const hooksSet = new Set<string>();
-    const platformSet = new Set<string>();
+      const matchPlatform = selectedPlatform
+        ? item.platform === selectedPlatform
+        : true;
 
-    creativesData.forEach((item) => {
-      item.emotion_tags?.forEach((tag: string) => {
-        emotionsSet.add(tag);
-      });
-
-      item.hook_types?.forEach((tag: string) => {
-        hooksSet.add(tag);
-      });
-
-      if (item.platform) {
-        platformSet.add(item.platform);
-      }
+      return (
+        matchEmotion &&
+        matchHook &&
+        matchPlatform
+      );
     });
-
-    setAllEmotions(Array.from(emotionsSet));
-    setAllHooks(Array.from(hooksSet));
-    setAllPlatforms(Array.from(platformSet));
-  };
-
-  // 🔥 FILTER
-  const filtered = creatives.filter((item) => {
-    const matchEmotion = selectedEmotion
-      ? item.emotion_tags?.includes(selectedEmotion)
-      : true;
-
-    const matchHook = selectedHook
-      ? item.hook_types?.includes(selectedHook)
-      : true;
-
-    const matchPlatform = selectedPlatform
-      ? item.platform === selectedPlatform
-      : true;
-
-    return matchEmotion && matchHook && matchPlatform;
-  });
-
-  // 🔥 INSIGHTS
-  const emotionCount: Record<string, number> = {};
-  const hookCount: Record<string, number> = {};
-  const platformCount: Record<string, number> = {};
-
-  filtered.forEach((item) => {
-    item.emotion_tags?.forEach((tag: string) => {
-      emotionCount[tag] = (emotionCount[tag] || 0) + 1;
-    });
-
-    item.hook_types?.forEach((tag: string) => {
-      hookCount[tag] = (hookCount[tag] || 0) + 1;
-    });
-
-    if (item.platform) {
-      platformCount[item.platform] =
-        (platformCount[item.platform] || 0) + 1;
-    }
-  });
-
-  const getTop = (obj: Record<string, number>) => {
-    const sorted = Object.entries(obj).sort((a, b) => b[1] - a[1]);
-    return sorted[0];
-  };
-
-  const topEmotion = getTop(emotionCount);
-  const topHook = getTop(hookCount);
-  const topPlatform = getTop(platformCount);
-  const getStrengthLabel = (percentage: number) => {
-    if (percentage >= 60) return "Dominant";
-    if (percentage >= 30) return "Strong";
-    return "Weak";
-  };
-
-    const getRelationshipStrength = (count: number) => {
-  if (count >= 6) return "Dominant Relationship";
-  if (count >= 4) return "Strong Relationship";
-  if (count >= 2) return "Emerging Relationship";
-
-  return "Weak Relationship";
-};
-
-  // 🔥 PATTERN COMBINATIONS
-  const patternCount: Record<string, number> = {};
-
-  filtered.forEach((item) => {
-    item.emotion_tags
-  ?.filter((emotion: string) =>
-    VALID_EMOTIONS.includes(
-      emotion.toLowerCase().trim()
-    )
-  )
-  .forEach((emotion: string) => {
-      item.hook_types?.forEach((hook: string) => {
-        const key = `${emotion} + ${hook}`;
-        patternCount[key] = (patternCount[key] || 0) + 1;
-      });
-    });
-  });
-
-  const topPatterns = Object.entries(patternCount)
-    .filter(([_, count]) => count >= 2)
-    .sort((a, b) => b[1] - a[1]);
-
-  // 🔥 PLATFORM PATTERNS
-  const platformPatterns: Record<string, Record<string, number>> = {};
-
-  filtered.forEach((item) => {
-    const platform = item.platform;
-    if (!platform) return;
-
-    if (!platformPatterns[platform]) {
-      platformPatterns[platform] = {};
-    }
-
-    item.emotion_tags
-  ?.filter((emotion: string) =>
-    VALID_EMOTIONS.includes(
-      emotion.toLowerCase().trim()
-    )
-  )
-  .forEach((emotion: string) => {
-      item.hook_types?.forEach((hook: string) => {
-        const key = `${emotion} + ${hook}`;
-        platformPatterns[platform][key] =
-          (platformPatterns[platform][key] || 0) + 1;
-      });
-    });
-  });
-
-const topPlatformPatterns = Object.entries(platformPatterns).map(
-  ([platform, patterns]) => {
-    const totalItems = filtered.filter(
-      (item) => item.platform === platform
-    ).length;
-
-    const filteredPatterns = Object.entries(patterns)
-      .filter(([_, count]) => count >= 2)
-      .sort((a, b) => b[1] - a[1]);
-
-    const top = filteredPatterns[0];
-
-    let percentage = 0;
-    let label = "";
-
-    if (top && totalItems > 0) {
-      percentage = Math.round((top[1] / totalItems) * 100);
-      label = getStrengthLabel(percentage);
-    }
-
-    return {
-      platform,
-      top,
-      percentage,
-      label,
-    };
-  }
-);
-
-// 🔥 CROSS-PLATFORM COMPARISON
-
-const crossPlatformData = topPatterns.map(([pattern, _]) => {
-  const result: {
-    pattern: string;
-    platforms: {
-      platform: string;
-      percentage: number;
-      label: string;
-      count: number;
-    }[];
-  } = {
-    pattern,
-    platforms: [],
-  };
-
-  Object.keys(platformPatterns).forEach((platform) => {
-    const totalItems = filtered.filter(
-      (item) => item.platform === platform
-    ).length;
-
-    const count = platformPatterns[platform][pattern] || 0;
-
-    let percentage = 0;
-    let label = "";
-
-    if (totalItems > 0 && count > 0) {
-      percentage = Math.round((count / totalItems) * 100);
-      label = getStrengthLabel(percentage);
-    }
-
-    // ✅ FIRST push
-    result.platforms.push({
-      platform,
-      percentage,
-      label,
-      count,
-    });
-  });
-
-  // ✅ THEN sort (after loop)
-  result.platforms.sort((a, b) => b.percentage - a.percentage);
-
-  return result;
-});
-
-const HOOK_BEHAVIOR_MAP: Record<string, string> = {
-  "before-after": "Transformation",
-  "problem-solution": "ProblemSolving",
-  "comparison": "Evaluation",
-  "authority": "Trust",
-  "social-proof": "Trust",
-  "demonstration": "Demonstration",
-  "urgency": "ActionPressure",
-};
-
-const EMOTION_BEHAVIOR_MAP: Record<string, string> = {
-  curiosity: "AttentionSeeking",
-  urgency: "ActionPressure",
-  fear: "RiskAvoidance",
-  aspiration: "Transformation",
-  status: "StatusSeeking",
-  trust: "Trust",
-  scarcity: "LossAvoidance",
-  hope: "Transformation",
-  satisfaction: "Reward",
-};
-
-
-
-
-const taxonomyClusters: Record<
-  string,
-  {
-    count: number;
-    patterns: string[];
-  }
-> = {};
-
-topPatterns.forEach(([pattern, count]) => {
-  const [emotion, hook] = pattern.split(" + ");
-
-  const emotionBehavior = EMOTION_BEHAVIOR_MAP[emotion];
-  const hookBehavior = HOOK_BEHAVIOR_MAP[hook];
-
-  const clusterKey = `${emotionBehavior} × ${hookBehavior}`;
-
-  if (!taxonomyClusters[clusterKey]) {
-    taxonomyClusters[clusterKey] = {
-      count: 0,
-      patterns: [],
-    };
-  }
-
-  taxonomyClusters[clusterKey].count += count;
-
-  taxonomyClusters[clusterKey].patterns.push(
-    `${emotion} → ${hook}`
-  );
-});
-
-const sortedTaxonomyClusters = Object.entries(taxonomyClusters).sort(
-  (a, b) => b[1].count - a[1].count
-);
-// 🧠 PATTERN CLUSTERS
-
-const patternClusters: Record<string, string[]> = {
-  Transformation: [
-    "before-after",
-    "transformation",
-    "results",
-  ],
-
-  ProblemSolving: [
-    "problem-solution",
-    "demonstration",
-  ],
-
-  AuthorityTrust: [
-    "authority",
-    "social-proof",
-  ],
-
-  ActionPressure: [
-    "urgency",
-    "scarcity",
-  ],
-};
-
-const clusterSignals: Record<
-  string,
-  {
-    count: number;
-    patterns: string[];
-  }
-> = {};
-
-topPatterns.forEach(([pattern, count]) => {
-  const hook = pattern.split(" + ")[1];
-
-  Object.entries(patternClusters).forEach(([cluster, hooks]) => {
-    if (hooks.includes(hook)) {
-      if (!clusterSignals[cluster]) {
-        clusterSignals[cluster] = {
-          count: 0,
-          patterns: [],
-        };
-      }
-
-      clusterSignals[cluster].count += count;
-
-      clusterSignals[cluster].patterns.push(pattern);
-    }
-  });
-});
-
-const sortedClusters = Object.entries(clusterSignals).sort(
-  (a, b) => b[1].count - a[1].count
-);
-
-// 🧠 RELATIONSHIP LAYER
-
-const emotionHookRelations: Record<string, number> = {};
-const hookVisualRelations: Record<string, number> = {};
-const emotionCtaRelations: Record<string, number> = {};
-const nichePatternRelations: Record<string, number> = {};
-
-filtered.forEach((item) => {
-
-  // Emotion ↔ Hook
-  item.emotion_tags
-  ?.filter((emotion: string) =>
-    VALID_EMOTIONS.includes(
-      emotion.toLowerCase().trim()
-    )
-  )
-  .forEach((emotion: string) => {
-    item.hook_types?.forEach((hook: string) => {
-      const key = `${emotion} ↔ ${hook}`;
-
-      emotionHookRelations[key] =
-        (emotionHookRelations[key] || 0) + 1;
-    });
-  });
-
-  // Hook ↔ Visual
-  item.hook_types?.forEach((hook: string) => {
-    item.visual_styles?.forEach((visual: string) => {
-      const key = `${hook} ↔ ${visual}`;
-
-      hookVisualRelations[key] =
-        (hookVisualRelations[key] || 0) + 1;
-    });
-  });
-
-  // Emotion ↔ CTA
-  item.emotion_tags
-  ?.filter((emotion: string) =>
-    VALID_EMOTIONS.includes(
-      emotion.toLowerCase().trim()
-    )
-  )
-  .forEach((emotion: string) => {
-    if (item.cta) {
-      const key = `${emotion} ↔ ${item.cta}`;
-
-      emotionCtaRelations[key] =
-        (emotionCtaRelations[key] || 0) + 1;
-    }
-  });
-
-  // Niche ↔ Pattern
-  item.emotion_tags
-  ?.filter((emotion: string) =>
-    VALID_EMOTIONS.includes(
-      emotion.toLowerCase().trim()
-    )
-  )
-  .forEach((emotion: string) => {
-    item.hook_types?.forEach((hook: string) => {
-      const pattern = `${emotion} + ${hook}`;
-
-      const key = `${item.niche} ↔ ${pattern}`;
-
-      nichePatternRelations[key] =
-        (nichePatternRelations[key] || 0) + 1;
-    });
-  });
-
-});
-
-const sortedEmotionHookRelations = Object.entries(
-  emotionHookRelations
-)
-  .filter(([_, count]) => count >= 2)
-  .sort((a, b) => b[1] - a[1]);
-
-const sortedHookVisualRelations = Object.entries(
-  hookVisualRelations
-)
-  .filter(([_, count]) => count >= 2)
-  .sort((a, b) => b[1] - a[1]);
-
-const sortedEmotionCtaRelations = Object.entries(
-  emotionCtaRelations
-)
-  .filter(([_, count]) => count >= 2)
-  .sort((a, b) => b[1] - a[1]);
-
-const sortedNichePatternRelations = Object.entries(
-  nichePatternRelations
-)
-  .filter(([_, count]) => count >= 2)
-  .sort((a, b) => b[1] - a[1]);
-
-  // 🧠 RELATIONSHIP ENGINE
-
-type RelationshipRecord = {
-  type: string;
-  left: string;
-  right: string;
-  count: number;
-};
-
-const relationships: RelationshipRecord[] = [];
-
-const relationshipMap: Record<string, number> = {};
-
-// 🔥 Emotion ↔ Hook
-
-filtered.forEach((item) => {
-  item.emotion_tags
-  ?.filter((emotion: string) =>
-    VALID_EMOTIONS.includes(
-      emotion.toLowerCase().trim()
-    )
-  )
-  .forEach((emotion: string) => {
-    item.hook_types?.forEach((hook: string) => {
-      const key = `Emotion-Hook::${emotion}::${hook}`;
-
-      relationshipMap[key] =
-        (relationshipMap[key] || 0) + 1;
-    });
-  });
-});
-
-// 🔥 Hook ↔ Visual
-
-filtered.forEach((item) => {
-  item.hook_types?.forEach((hook: string) => {
-    item.visual_styles?.forEach((visual: string) => {
-      const key = `Hook-Visual::${hook}::${visual}`;
-
-      relationshipMap[key] =
-        (relationshipMap[key] || 0) + 1;
-    });
-  });
-});
-
-// 🔥 Emotion ↔ CTA
-
-filtered.forEach((item) => {
-  item.emotion_tags
-  ?.filter((emotion: string) =>
-    VALID_EMOTIONS.includes(
-      emotion.toLowerCase().trim()
-    )
-  )
-  .forEach((emotion: string) => {
-    if (!item.cta) return;
-
-    const key = `Emotion-CTA::${emotion}::${item.cta}`;
-
-    relationshipMap[key] =
-      (relationshipMap[key] || 0) + 1;
-  });
-});
-
-// 🔥 Niche ↔ Pattern
-
-filtered.forEach((item) => {
-  item.emotion_tags
-  ?.filter((emotion: string) =>
-    VALID_EMOTIONS.includes(
-      emotion.toLowerCase().trim()
-    )
-  )
-  .forEach((emotion: string) => {
-    item.hook_types?.forEach((hook: string) => {
-      const pattern = `${emotion} + ${hook}`;
-
-      const key = `Niche-Pattern::${item.niche}::${pattern}`;
-
-      relationshipMap[key] =
-        (relationshipMap[key] || 0) + 1;
-    });
-  });
-});
-
-// 🔥 STRUCTURE RELATIONSHIPS
-
-Object.entries(relationshipMap).forEach(([key, count]) => {
-  if (count < 2) return;
-
-  const [type, left, right] = key.split("::");
-
-  relationships.push({
-    type,
-    left,
-    right,
-    count,
-  });
-});
-
-// 🔥 GROUPED RELATIONSHIPS
-
-const groupedRelationships: Record<
-  string,
-  RelationshipRecord[]
-> = {};
-
-relationships.forEach((relationship) => {
-  if (!groupedRelationships[relationship.type]) {
-    groupedRelationships[relationship.type] = [];
-  }
-
-  groupedRelationships[relationship.type].push(
-    relationship
-  );
-});
-
-// 🧠 REINFORCED ATTENTION STRUCTURES
-
-type ReinforcedStructure = {
-  emotion: string;
-  hooks: Record<string, number>;
-  visuals: Record<string, number>;
-  ctas: Record<string, number>;
-  niches: Record<string, number>;
-  totalStrength: number;
-};
-
-const reinforcedStructures: Record<string, ReinforcedStructure> = {};
-
-filtered.forEach((item) => {
- item.emotion_tags
-  ?.filter((emotion: string) =>
-    VALID_EMOTIONS.includes(
-      emotion.toLowerCase().trim()
-    )
-  )
-  .forEach((emotion: string) => {
-    if (!reinforcedStructures[emotion]) {
-      reinforcedStructures[emotion] = {
-        emotion,
-        hooks: {},
-        visuals: {},
-        ctas: {},
-        niches: {},
-        totalStrength: 0,
-      };
-    }
-
-    // hooks
-    item.hook_types?.forEach((hook: string) => {
-      reinforcedStructures[emotion].hooks[hook] =
-        (reinforcedStructures[emotion].hooks[hook] || 0) + 1;
-
-      reinforcedStructures[emotion].totalStrength += 1;
-    });
-
-    // visuals
-    item.visual_styles?.forEach((visual: string) => {
-      reinforcedStructures[emotion].visuals[visual] =
-        (reinforcedStructures[emotion].visuals[visual] || 0) + 1;
-
-      reinforcedStructures[emotion].totalStrength += 1;
-    });
-
-    // CTA
-    if (item.cta) {
-      reinforcedStructures[emotion].ctas[item.cta] =
-        (reinforcedStructures[emotion].ctas[item.cta] || 0) + 1;
-
-      reinforcedStructures[emotion].totalStrength += 1;
-    }
-
-    // niche
-    if (item.niche) {
-      reinforcedStructures[emotion].niches[item.niche] =
-        (reinforcedStructures[emotion].niches[item.niche] || 0) + 1;
-
-      reinforcedStructures[emotion].totalStrength += 1;
-    }
-  });
-});
-
-const sortedReinforcedStructures = Object.values(
-  reinforcedStructures
-).sort((a, b) => b.totalStrength - a.totalStrength);
-
-const MIN_STRUCTURE_STRENGTH = 10;
-
-const filteredReinforcedStructures =
-  sortedReinforcedStructures.filter(
-    (structure) =>
-      structure.totalStrength >=
-      MIN_STRUCTURE_STRENGTH
+  }, [
+    creatives,
+    selectedEmotion,
+    selectedHook,
+    selectedPlatform,
+  ]);
+
+  const intelligence = useMemo(
+    () => buildIntelligence(filtered),
+    [filtered]
   );
 
-const visibleStructures = showAllStructures
-  ? sortedReinforcedStructures
-  : filteredReinforcedStructures;
+  const {
+    summary,
+    patterns,
+    relationships,
+    reinforced,
+    taxonomy,
+    platform,
+  } = intelligence;
 
-const getTopRelationships = (
-  obj: Record<string, number>,
-  limit = 3
-) => {
-  return Object.entries(obj)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, limit);
-};
+  const { topEmotion, topHook, topPlatform } = summary;
+  const { topPatterns } = patterns;
+  const { groupedRelationships } = relationships;
+  const {
+    sortedReinforcedStructures,
+    filteredReinforcedStructures,
+  } = reinforced;
+
+  const visibleStructures =
+    showAllStructures
+      ? sortedReinforcedStructures
+      : filteredReinforcedStructures;
+
+  const {
+    topPlatformPatterns,
+    crossPlatformData,
+  } = platform;
+
+  const signalExploration = useMemo(
+    () =>
+      buildSignalExploration(
+        filtered,
+        signalExplorer
+      ),
+    [filtered, signalExplorer]
+  );
+   
+  // PATTERN EXPLORATION
+
+  const selectedPatternData = useMemo(() =>
+    buildPatternExploration(
+      filtered,
+      selectedPattern
+    ), [filtered, selectedPattern]);
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-2">Creative Gallery</h1>
-      <p className="text-sm text-gray-400 mb-6">
-        Explore repeating creative patterns across platforms.
+    <div className="p-8 bg-black min-h-screen text-white">
+      <h1 className="text-3xl font-bold mb-2">
+        Creative Gallery
+      </h1>
+
+      <p className="text-sm text-gray-400 mb-8">
+        Structured attention signal exploration.
       </p>
 
-      {/* 📊 INSIGHTS */}
-<div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white">
-        <h2 className="font-semibold mb-2 text-lg">📊 Dataset Summary</h2>
-        <p>Top Emotion: {topEmotion?.[0]} ({topEmotion?.[1]})</p>
-        <p>Top Hook: {topHook?.[0]} ({topHook?.[1]})</p>
-        <p>Top Platform: {topPlatform?.[0]} ({topPlatform?.[1]})</p>
-</div>
+      {/* SUMMARY */}
 
-{/* 🔥 PATTERNS */}
-<div className="bg-[#111] border border-gray-800 p-4 rounded-xl mb-6">
-        <h2 className="font-semibold mb-3 text-lg text-white">
+      <div className="mb-6 p-5 rounded-2xl bg-[#111] border border-gray-800">
+        <h2 className="font-semibold text-lg mb-3">
+          📊 Dataset Summary
+        </h2>
+
+        <div className="space-y-2 text-sm">
+          <p>
+            Top Emotion: {topEmotion?.[0]} (
+            {topEmotion?.[1]})
+          </p>
+
+          <p>
+            Top Hook: {topHook?.[0]} (
+            {topHook?.[1]})
+          </p>
+
+          <p>
+            Top Platform: {topPlatform?.[0]} (
+            {topPlatform?.[1]})
+          </p>
+        </div>
+      </div>
+
+      {/* PATTERNS */}
+
+      <div className="mb-6 p-5 rounded-2xl bg-[#111] border border-gray-800">
+        <h2 className="font-semibold text-lg mb-4">
           🔥 Repeating Patterns
         </h2>
 
-              {topPatterns.map(([pattern, count], index) => {
-                const [emotion, hook] = pattern.split(" + ");
-                const explanation = patternExplanations[pattern];
-                const isStrong = index === 0;
+        {topPatterns.map(([pattern, count]) => {
+          const [emotion, hook] =
+            pattern.split(" + ");
 
-                return (
-                  <div
-                    key={pattern}
-                    className={`mb-4 p-3 rounded-lg ${
-                      isStrong ? "bg-[#1a1a1a] border border-yellow-500" : "bg-[#111]"
-                    }`}
-                  >
-                    <p className={`text-xs mb-1 ${isStrong ? "text-yellow-400" : "text-gray-500"}`}>
-                      {isStrong ? "🔥 Strong Signal" : "⚪ Secondary Pattern"}
-                    </p>
-
-                    <p className="text-sm text-white">
-                      Emotion: <span className="font-semibold">{emotion}</span> • Hook:{" "}
-                      <span className="font-semibold">{hook}</span> ({count})
-                    </p>
-
-                    <p className="text-xs text-gray-400">
-                      ↳ Repeated across multiple creatives
-                    </p>
-
-                    {explanation && (
-                      <p className="text-xs text-gray-400 mt-1">
-                        💡 Why this works: {explanation}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-
-              <p className="text-xs text-gray-500 mt-2">
-                → Use these patterns as reference when creating creatives.
+          return (
+            <div
+              key={pattern}
+              onClick={() =>
+              setSignalExplorer({
+                type: "pattern",
+                value: pattern,
+              })
+            }
+              className="mb-3 p-3 rounded-xl border border-gray-800 cursor-pointer hover:border-gray-600 transition"
+            >
+              <p className="text-sm">
+                <span className="font-semibold">
+                  {emotion}
+                </span>{" "}
+                →{" "}
+                <span className="font-semibold">
+                  {hook}
+                </span>{" "}
+                ({count})
               </p>
-</div>
 
-{/* 📱 PLATFORM */}            
-<div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white shadow">
-            <h2 className="font-semibold mb-3 text-gray-200">
-              📱 Platform Insights
-            </h2>
+              {patternExplanations[pattern] && (
+                <p className="text-xs text-gray-400 mt-2">
+                  💡{" "}
+                  {
+                    patternExplanations[
+                      pattern
+                    ]
+                  }
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
 
-              {topPlatformPatterns.map(({ platform, top, percentage, label }) => {
-                const emotion = top ? top[0].split(" + ")[0] : "";
-                const hook = top ? top[0].split(" + ")[1] : "";
+      {/* PLATFORM INSIGHTS */}
 
-                return (
-                  <div key={platform} className="mb-3">
-                    <p className="text-sm">
-                      <span className="font-semibold text-white">{platform}</span> →{" "}
-                      {top ? (
-                        <>
-                          <span className="text-gray-400">Emotion:</span>{" "}
-                          <span className="font-semibold">{emotion}</span>{" "}
-                          <span className="text-gray-500">•</span>{" "}
-                          <span className="text-gray-400">Hook:</span>{" "}
-                          <span className="font-semibold">{hook}</span>{" "}
-                          <span className="text-gray-400">({top[1]})</span>
-                        </>
-                      ) : (
-                        <span className="text-gray-400">
-                          No strong pattern yet
-                        </span>
-                      )}
-                    </p>
+      <div className="mb-6 p-5 rounded-2xl bg-[#111] border border-gray-800">
+        <h2 className="font-semibold text-lg mb-4">
+          🌐 Platform Insights
+        </h2>
 
-                    {top && (
-                      <>
-                        <p className="text-xs text-gray-400">
-                          ↳ {percentage}% of creatives on this platform
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          ↳ {label} pattern
-                        </p>
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-</div>
-
-{/* ⚖️ CROSS-PLATFORM COMPARISON */}
-<div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white shadow">
-  <h2 className="font-semibold mb-3 text-gray-200">
-    ⚖️ Cross-Platform Comparison
-  </h2>
-
-  {crossPlatformData.length > 0 ? (
-    crossPlatformData.map(({ pattern, platforms }) => {
-      const [emotion, hook] = pattern.split(" + ");
-
-      return (
-        <div key={pattern} className="mb-4">
-          <p className="text-sm font-semibold text-white mb-1">
-            Emotion: {emotion} • Hook: {hook}
-          </p>
-
-          <div className="text-xs text-gray-400 space-y-1">
-            {platforms.map(({ platform, percentage, label, count }) => (
-              <p key={platform}>
-                {platform} →{" "}
-                {count >= 2 ? (
-                  <>
-                    {percentage}% ({label})
-                  </>
-                ) : (
-                  "Low presence (< 2 occurrences)"
-                )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {topPlatformPatterns.map((item) => (
+            <div
+              key={item.platform}
+              className="rounded-xl border border-gray-800 p-3"
+            >
+              <p className="text-sm font-semibold">
+                {item.platform}
               </p>
+              <p className="text-xs text-gray-400 mt-1">
+                {item.top ? item.top[0] : "No pattern"} ({item.top?.[1] ?? 0})
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                {item.label} • {item.percentage}%
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5">
+          <h3 className="text-sm font-semibold mb-3">
+            Cross-platform pattern spread
+          </h3>
+          <div className="space-y-3 text-xs text-gray-400">
+            {crossPlatformData.slice(0, 3).map((patternGroup) => (
+              <div key={patternGroup.pattern}>
+                <p className="font-semibold text-white">
+                  {patternGroup.pattern}
+                </p>
+                <div className="grid grid-cols-1 gap-2 mt-2">
+                  {patternGroup.platforms.map((entry) => (
+                    <p key={entry.platform}>
+                      {entry.platform}: {entry.count} ({entry.label})
+                    </p>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>
-      );
-    })
-  ) : (
-    <p className="text-sm text-gray-500">No comparable patterns yet</p>
-  )}
-</div>
+      </div>
 
-{/* 🧠 TAXONOMY RELATIONSHIPS */}
-<div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white shadow">
-  <h2 className="font-semibold mb-3 text-gray-200">
-    🧠 Behavioral Taxonomy
-  </h2>
+      {/* TAXONOMY */}
 
-  {sortedTaxonomyClusters.length > 0 ? (
-    sortedTaxonomyClusters.map(([cluster, data]) => (
-      <div
-        key={cluster}
-        className="mb-4 border border-gray-800 rounded-xl p-3"
-      >
-        <p className="text-sm font-semibold text-white">
-          {cluster}
-        </p>
+      <div className="mb-6 p-5 rounded-2xl bg-[#111] border border-gray-800">
+        <h2 className="font-semibold text-lg mb-4">
+          🧭 Taxonomy Clusters
+        </h2>
 
-        <p className="text-xs text-gray-400 mt-1">
-          Total Structural Strength: {data.count}
-        </p>
-
-        <div className="mt-2 space-y-1">
-          {data.patterns.map((pattern) => (
-            <p
-              key={pattern}
-              className="text-xs text-gray-500"
-            >
-              • {pattern}
-            </p>
+        <div className="space-y-4 text-xs text-gray-400">
+          {taxonomy.map(([cluster, data]) => (
+            <div key={cluster} className="rounded-xl border border-gray-800 p-3">
+              <p className="font-semibold text-white">
+                {cluster} ({data.count})
+              </p>
+              <p className="mt-2">
+                {data.patterns.join(", ")}
+              </p>
+            </div>
           ))}
         </div>
       </div>
-    ))
-  ) : (
-    <p className="text-sm text-gray-500">
-      No taxonomy relationships yet
-    </p>
-  )}
-</div>
 
-{/* 🧠 BEHAVIOR CLUSTERS */}
-<div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white shadow">
-  <h2 className="font-semibold mb-3 text-gray-200">
-    🧠 Behavior Clusters
-  </h2>
+      {/* RELATIONSHIPS */}
 
-  {sortedClusters.length > 0 ? (
-    sortedClusters.map(([cluster, data]) => (
-      <div
-        key={cluster}
-        className="mb-4 border border-gray-800 rounded-lg p-3"
-      >
-        <p className="text-sm font-semibold text-white">
-          {cluster} Cluster
-        </p>
+      <div className="mb-6 p-5 rounded-2xl bg-[#111] border border-gray-800">
+        <h2 className="font-semibold text-lg mb-4">
+          🧠 Relationship Intelligence
+        </h2>
 
-        <p className="text-xs text-gray-400 mt-1">
-          Total Signal Strength: {data.count}
-        </p>
+        {Object.entries(
+          groupedRelationships
+        ).map(([type, items]) => (
+          <div key={type} className="mb-5">
+            <h3 className="text-sm font-semibold mb-2">
+              {type}
+            </h3>
 
-        <div className="mt-2 text-xs text-gray-500">
-          {data.patterns.map((pattern) => {
-            const [emotion, hook] = pattern.split(" + ");
-
-            return (
-              <p key={pattern}>
-                • Emotion: {emotion} → Hook: {hook}
-              </p>
-            );
-          })}
-        </div>
+            <div className="space-y-2">
+              {items.map((item) => (
+                <div
+                  key={`${item.left}-${item.right}`}
+                  className="text-xs text-gray-400 cursor-pointer hover:text-white"
+                  onClick={() =>
+                setSignalExplorer({
+                  type: "relationship",
+                  value: `${item.left}::${item.right}`,
+                })
+              }
+                >
+                  {item.left} ↔ {item.right} (
+                  {item.count}) —{" "}
+                  {getRelationshipStrength(
+                    item.count
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
-    ))
-  ) : (
-    <p className="text-sm text-gray-500">
-      No cluster signals yet
-    </p>
-  )}
-</div>
 
-{/* 🧠 RELATIONSHIP FOUNDATION */} {/* 🧠 RELATIONSHIP INTELLIGENCE */}
-<div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white shadow">
-  <h2 className="font-semibold mb-3 text-gray-200">
-    🧠 Relationship Intelligence
-  </h2>
+      {/* REINFORCED STRUCTURES */}
 
-  {Object.entries(groupedRelationships).map(
-    ([type, items]) => (
-      <div key={type} className="mb-5">
-        <p className="text-sm font-semibold text-white mb-2">
-          {type}
-        </p>
+      <div className="mb-6 p-5 rounded-2xl bg-[#111] border border-gray-800">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold text-lg">
+            🧠 Reinforced Structures
+          </h2>
 
-        <div className="space-y-1">
-          {items
-            .sort((a, b) => b.count - a.count)
-            .map((item) => (
-              <p
-                key={`${item.left}-${item.right}`}
-                className="text-xs text-gray-400"
-              >
-                {item.left} ↔ {item.right} ({item.count})
-              </p>
-            ))}
-        </div>
-      </div>
-    )
-  )}
-</div>
-
-{/* 🧠 REINFORCED ATTENTION STRUCTURES */}
-<div className="mb-6 p-4 rounded-2xl bg-gray-900 text-white shadow">
-  <h2 className="font-semibold mb-3 text-gray-200">
-    🧠 Reinforced Attention Structures
-  </h2>
-        <div className="mb-4">
           <button
             onClick={() =>
               setShowAllStructures(
                 !showAllStructures
               )
             }
-            className="text-xs px-3 py-1 rounded-lg bg-gray-800 text-gray-300 hover:bg-gray-700"
+            className="text-xs px-3 py-1 rounded-lg bg-gray-800"
           >
             {showAllStructures
-              ? "Show Strong Signals Only"
-              : "Show All Structures"}
+              ? "Show Strong Only"
+              : "Show All"}
           </button>
         </div>
 
-  {visibleStructures.length > 0 ? (
-    visibleStructures.map((structure) => (
-      <div
-        key={structure.emotion}
-        className="mb-4 border border-gray-800 rounded-xl p-4"
-      >
-        <p className="text-sm font-semibold text-white capitalize">
-          Core Emotion: {structure.emotion}
-        </p>
+        {visibleStructures.map((structure) => (
+          <div
+          key={structure.emotion}
+          onClick={() =>
+            setSignalExplorer({
+              type: "emotion",
+              value: structure.emotion,
+            })
+          }
+            className="mb-4 p-4 rounded-xl border border-gray-800 cursor-pointer hover:border-gray-600 transition"
+          >
+            <p className="font-semibold capitalize">
+              {structure.emotion}
+            </p>
 
-        <p className="text-xs text-gray-400 mt-1">
-          Total Reinforcement Strength: {structure.totalStrength}
-        </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Reinforcement Strength:{" "}
+              {structure.totalStrength}
+            </p>
 
-        {/* Hooks */}
-        <div className="mt-3">
-          <p className="text-xs text-gray-500 mb-1">
-            Frequently appears with hooks:
-          </p>
-
-          {getTopRelationships(structure.hooks).map(
-            ([hook, count]) => (
-              <p
-                key={hook}
-                className="text-xs text-gray-400"
-              >
-                • {hook} ({count})
+            <div className="mt-4">
+              <p className="text-xs text-gray-500 mb-2">
+                Hooks
               </p>
-            )
-          )}
-        </div>
 
-        {/* Visuals */}
-        <div className="mt-3">
-          <p className="text-xs text-gray-500 mb-1">
-            Frequently appears with visuals:
-          </p>
+              {getTopEntries(
+                structure.hooks
+              ).map(([hook, count]) => (
+                <p
+                  key={hook}
+                  className="text-xs text-gray-300"
+                >
+                  • {hook} ({count})
+                </p>
+              ))}
+            </div>
 
-          {getTopRelationships(structure.visuals).map(
-            ([visual, count]) => (
-              <p
-                key={visual}
-                className="text-xs text-gray-400"
-              >
-                • {visual} ({count})
+            <div className="mt-4">
+              <p className="text-xs text-gray-500 mb-2">
+                Visuals
               </p>
-            )
-          )}
-        </div>
 
-        {/* CTA */}
-        <div className="mt-3">
-          <p className="text-xs text-gray-500 mb-1">
-            Frequently appears with CTA:
-          </p>
-
-          {getTopRelationships(structure.ctas).map(
-            ([cta, count]) => (
-              <p
-                key={cta}
-                className="text-xs text-gray-400"
-              >
-                • {cta} ({count})
-              </p>
-            )
-          )}
-        </div>
-
-        {/* Niches */}
-        <div className="mt-3">
-          <p className="text-xs text-gray-500 mb-1">
-            Frequently appears with niches:
-          </p>
-
-          {getTopRelationships(structure.niches).map(
-            ([niche, count]) => (
-              <p
-                key={niche}
-                className="text-xs text-gray-400"
-              >
-                • {niche} ({count})
-              </p>
-            )
-          )}
-        </div>
+              {getTopEntries(
+                structure.visuals
+              ).map(([visual, count]) => (
+                <p
+                  key={visual}
+                  className="text-xs text-gray-300"
+                >
+                  • {visual} ({count})
+                </p>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
-    ))
-  ) : (
-    <p className="text-sm text-gray-500">
-      No reinforced structures yet
-    </p>
-  )}
-</div>
-
-{/* FILTERS */}
-<div className="flex gap-4 mb-6">
-        <select onChange={(e) => setSelectedEmotion(e.target.value)}>
-          <option value="">All Emotions</option>
-          {allEmotions.map((e) => <option key={e}>{e}</option>)}
-        </select>
-
-        <select onChange={(e) => setSelectedHook(e.target.value)}>
-          <option value="">All Hooks</option>
-          {allHooks.map((h) => <option key={h}>{h}</option>)}
-        </select>
-
-        <select onChange={(e) => setSelectedPlatform(e.target.value)}>
-          <option value="">All Platforms</option>
-          {allPlatforms.map((p) => <option key={p}>{p}</option>)}
-        </select>
-</div>
-
-{/* 🔽 GRID */}
-<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-  {filtered.map((item) => (
-    <div key={item.id} className="border border-gray-800 bg-[#111] p-4 rounded-xl">
       
-      {/* ✅ IMAGE (FIXED) */}
-      {item.image_url && (
-        <img
-          src={item.image_url}
-          alt="creative"
-          className="w-full h-40 object-cover mb-3 rounded-md"
-        />
+      {/* SIGNAL EXPLORATION */}
+
+          {signalExplorer &&
+            signalExploration && (
+              <div className="mb-6 p-5 rounded-2xl bg-[#111] border border-gray-800">
+
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-semibold text-lg">
+                    🧠 Signal Exploration
+                  </h2>
+
+                  <button
+                    onClick={() =>
+                      setSignalExplorer(null)
+                    }
+                    className="text-xs text-gray-400 hover:text-white"
+                  >
+                    Close
+                  </button>
+                </div>
+
+                <p className="text-sm text-yellow-400 mb-5">
+                  Exploring:{" "}
+                  {signalExplorer.value}
+                </p>
+
+                {/* EMOTIONS */}
+
+                <div className="mb-4">
+                  <p className="text-xs text-gray-500 mb-2">
+                    Emotions
+                  </p>
+
+                  {Object.entries(
+                    signalExploration.emotions
+                  )
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5)
+                    .map(([emotion, count]) => (
+                      <p
+                        key={emotion}
+                        className="text-xs text-gray-300"
+                      >
+                        • {emotion} ({count})
+                      </p>
+                    ))}
+                </div>
+
+                {/* HOOKS */}
+
+                <div className="mb-4">
+                  <p className="text-xs text-gray-500 mb-2">
+                    Hooks
+                  </p>
+
+                  {Object.entries(
+                    signalExploration.hooks
+                  )
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5)
+                    .map(([hook, count]) => (
+                      <p
+                        key={hook}
+                        className="text-xs text-gray-300"
+                      >
+                        • {hook} ({count})
+                      </p>
+                    ))}
+                </div>
+
+                {/* VISUALS */}
+
+                <div className="mb-4">
+                  <p className="text-xs text-gray-500 mb-2">
+                    Visuals
+                  </p>
+
+                  {Object.entries(
+                    signalExploration.visuals
+                  )
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5)
+                    .map(([visual, count]) => (
+                      <p
+                        key={visual}
+                        className="text-xs text-gray-300"
+                      >
+                        • {visual} ({count})
+                      </p>
+                    ))}
+                </div>
+
+                {/* CTA */}
+
+                <div className="mb-4">
+                  <p className="text-xs text-gray-500 mb-2">
+                    CTA
+                  </p>
+
+                  {Object.entries(
+                    signalExploration.ctas
+                  )
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5)
+                    .map(([cta, count]) => (
+                      <p
+                        key={cta}
+                        className="text-xs text-gray-300"
+                      >
+                        • {cta} ({count})
+                      </p>
+                    ))}
+                </div>
+
+                {/* MATCHING CREATIVES */}
+
+                <div>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Matching Creatives
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {signalExploration.matchingCreatives.map(
+                      (item: Creative) => (
+                        <div
+                          key={item.id}
+                          className="bg-black border border-gray-800 rounded-lg p-3"
+                        >
+                          <p className="text-sm font-medium">
+                            {item.title}
+                          </p>
+
+                          <p className="text-xs text-gray-500 mt-1">
+                            {item.platform} •{" "}
+                            {item.niche}
+                          </p>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+              </div>
+          )}
+          
+      {/* PATTERN EXPLORATION */}
+
+      {selectedPattern &&
+        selectedPatternData && (
+          <div className="mb-6 p-5 rounded-2xl bg-[#111] border border-gray-800">
+
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-lg">
+                🧠 Pattern Exploration
+              </h2>
+
+              <button
+                onClick={() =>
+                  setSelectedPattern(null)
+                }
+                className="text-xs text-gray-400 hover:text-white"
+              >
+                Close
+              </button>
+            </div>
+
+            <p className="text-sm text-yellow-400 mb-4">
+              Selected Pattern: {selectedPattern}
+            </p>
+
+            {/* VISUALS */}
+
+            <div className="mb-4">
+              <p className="text-xs text-gray-500 mb-2">
+                Visual Relationships
+              </p>
+
+              {getTopEntries(
+                selectedPatternData.visuals
+              ).map(([visual, count]) => (
+                <p
+                  key={visual}
+                  className="text-xs text-gray-300"
+                >
+                  • {visual} ({count}) —{" "}
+                  {getRelationshipStrength(count)}
+                </p>
+              ))}
+            </div>
+
+            {/* CTA */}
+
+            <div className="mb-4">
+              <p className="text-xs text-gray-500 mb-2">
+                CTA Relationships
+              </p>
+
+              {getTopEntries(
+                selectedPatternData.ctas
+              ).map(([cta, count]) => (
+                <p
+                  key={cta}
+                  className="text-xs text-gray-300"
+                >
+                  • {cta} ({count}) —{" "}
+                  {getRelationshipStrength(count)}
+                </p>
+              ))}
+            </div>
+
+            {/* NICHES */}
+
+            <div className="mb-4">
+              <p className="text-xs text-gray-500 mb-2">
+                Niche Relationships
+              </p>
+
+              {getTopEntries(
+                selectedPatternData.niches
+              ).map(([niche, count]) => (
+                <p
+                  key={niche}
+                  className="text-xs text-gray-300"
+                >
+                  • {niche} ({count}) —{" "}
+                  {getRelationshipStrength(count)}
+                </p>
+              ))}
+            </div>
+
+            {/* PLATFORMS */}
+
+            <div className="mb-4">
+              <p className="text-xs text-gray-500 mb-2">
+                Platform Relationships
+              </p>
+
+              {getTopEntries(
+                selectedPatternData.platforms
+              ).map(([platform, count]) => (
+                <p
+                  key={platform}
+                  className="text-xs text-gray-300"
+                >
+                  • {platform} ({count}) —{" "}
+                  {getRelationshipStrength(count)}
+                </p>
+              ))}
+            </div>
+
+            {/* MATCHING CREATIVES */}
+
+            <div>
+              <p className="text-xs text-gray-500 mb-3">
+                Matching Creatives
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {selectedPatternData.matchingCreatives.map(
+                  (item: Creative) => (
+                    <div
+                      key={item.id}
+                      className="bg-black border border-gray-800 rounded-lg p-3"
+                    >
+                      <p className="text-sm font-medium">
+                        {item.title}
+                      </p>
+
+                      <p className="text-xs text-gray-500 mt-1">
+                        {item.platform} •{" "}
+                        {item.niche}
+                      </p>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          </div>
       )}
 
-      {/* TEXT CONTENT */}
-      <h2 className="font-semibold text-white">{item.title}</h2>
-      <p className="text-sm text-gray-400">{item.brand}</p>
+      {/* FILTERS */}
 
-      <p className="mt-2 text-sm text-gray-300">
-        <strong>Hook:</strong> {item.hook}
-      </p>
+      <div className="flex gap-4 mb-8">
+        <select
+          onChange={(e) =>
+            setSelectedEmotion(
+              e.target.value
+            )
+          }
+          className="bg-[#111] border border-gray-700 p-2 rounded-lg"
+        >
+          <option value="">
+            All Emotions
+          </option>
 
-      <p className="text-sm text-gray-300">
-        <strong>CTA:</strong> {item.cta}
-      </p>
+          {allEmotions.map((emotion) => (
+            <option key={emotion}>
+              {emotion}
+            </option>
+          ))}
+        </select>
 
-      {/* TAGS */}
-      <div className="mt-2 text-xs text-gray-400 space-y-1">
-        <p>
-          <strong>Emotion:</strong> {item.emotion_tags?.join(", ")}
-        </p>
-        <p>
-          <strong>Hook Type:</strong> {item.hook_types?.join(", ")}
-        </p>
-        <p>
-          <strong>Visual:</strong> {item.visual_styles?.join(", ")}
-        </p>
+        <select
+          onChange={(e) =>
+            setSelectedHook(e.target.value)
+          }
+          className="bg-[#111] border border-gray-700 p-2 rounded-lg"
+        >
+          <option value="">
+            All Hooks
+          </option>
+
+          {allHooks.map((hook) => (
+            <option key={hook}>
+              {hook}
+            </option>
+          ))}
+        </select>
+
+        <select
+          onChange={(e) =>
+            setSelectedPlatform(
+              e.target.value
+            )
+          }
+          className="bg-[#111] border border-gray-700 p-2 rounded-lg"
+        >
+          <option value="">
+            All Platforms
+          </option>
+
+          {allPlatforms.map((platform) => (
+            <option key={platform}>
+              {platform}
+            </option>
+          ))}
+        </select>
       </div>
 
-      <p className="text-xs text-gray-500 mt-3">
-        {item.platform} • {item.niche}
-      </p>
-    </div>
-  ))}
-</div>
+      {/* GRID */}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {filtered.map((item) => (
+          <div
+            key={item.id}
+            className="bg-[#111] border border-gray-800 rounded-xl p-4"
+          >
+            {item.image_url && (
+              <Image
+                src={item.image_url}
+                alt="creative"
+                width={400}
+                height={160}
+                className="w-full h-40 object-cover rounded-lg mb-4"
+              />
+            )}
+
+            <h2 className="font-semibold">
+              {item.title}
+            </h2>
+
+            <p className="text-sm text-gray-400">
+              {item.brand}
+            </p>
+
+            <div className="mt-3 text-xs text-gray-400 space-y-1">
+              <p>
+                Emotion:{" "}
+                {item.emotion_tags?.join(
+                  ", "
+                )}
+              </p>
+
+              <p>
+                Hooks:{" "}
+                {item.hook_types?.join(
+                  ", "
+                )}
+              </p>
+
+              <p>
+                Visuals:{" "}
+                {item.visual_styles?.join(
+                  ", "
+                )}
+              </p>
+            </div>
+
+            <p className="text-xs text-gray-500 mt-4">
+              {item.platform} •{" "}
+              {item.niche}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
