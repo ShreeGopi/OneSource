@@ -2,7 +2,7 @@
 
 ## Creative Genome / Attention Intelligence
 
-**OneSource** is a structured intelligence system for analyzing e-commerce attention patterns.
+**OneSource** is a structured intelligence system for analyzing internet attention patterns.
 
 Instead of being just another AI content generator, OneSource focuses on building a **durable data moat** around high-performing internet creatives.
 
