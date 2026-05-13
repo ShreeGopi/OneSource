@@ -1,80 +1,96 @@
 import { Creative } from "../types/creative";
+import {
+  extractCreativeSignals,
+  hasSignal,
+} from "../signals/extractSignals";
+import { normalizeSignal } from "../signals/normalize";
+import { incrementMap } from "../utils/helpers";
 
-export const buildSignalExploration = (
-  creatives: Creative[],
-  explorer:
-    | {
-        type: string;
-        value: string;
-      }
-    | null
-) => {
-  if (!explorer) return null;
+type SignalExplorer = {
+  type: string;
+  value: string;
+};
 
-  let matchingCreatives: Creative[] = [];
-
-  // PATTERN
-  
+function normalizeExplorer(
+  explorer: SignalExplorer
+): SignalExplorer {
   if (explorer.type === "pattern") {
     const [emotion, hook] =
       explorer.value.split(" + ");
 
-    matchingCreatives = creatives.filter(
-      (item) =>
-        item.emotion_tags?.includes(
-          emotion
-        ) &&
-        item.hook_types?.includes(hook)
-    );
+    return {
+      type: explorer.type,
+      value: `${normalizeSignal(emotion)} + ${normalizeSignal(hook)}`,
+    };
   }
 
-  // EMOTION
+  return {
+    type: explorer.type,
+    value: normalizeSignal(explorer.value),
+  };
+}
 
-  if (explorer.type === "emotion") {
-    matchingCreatives = creatives.filter(
-      (item) =>
-        item.emotion_tags?.includes(
-          explorer.value
-        )
+function matchesExplorer(
+  creative: Creative,
+  explorer: SignalExplorer
+): boolean {
+  const signals = extractCreativeSignals(creative);
+
+  if (explorer.type === "pattern") {
+    const [emotion, hook] =
+      explorer.value.split(" + ");
+
+    return (
+      signals.emotions.includes(emotion) &&
+      signals.hooks.includes(hook)
     );
   }
-
-  // RELATIONSHIP
 
   if (explorer.type === "relationship") {
     const [left, right] =
-      explorer.value.split("::");
+      explorer.value
+        .split("::")
+        .map(normalizeSignal);
 
-    matchingCreatives = creatives.filter(
-      (item) => {
-        const hasLeft =
-          item.emotion_tags?.includes(
-            left
-          ) ||
-          item.hook_types?.includes(left) ||
-          item.visual_styles?.includes(
-            left
-          ) ||
-          item.cta === left ||
-          item.niche === left;
+    const signalTypes = [
+      "emotion",
+      "hook",
+      "visual",
+      "cta",
+      "platform",
+      "niche",
+    ];
 
-        const hasRight =
-          item.emotion_tags?.includes(
-            right
-          ) ||
-          item.hook_types?.includes(
-            right
-          ) ||
-          item.visual_styles?.includes(
-            right
-          ) ||
-          item.cta === right ||
-          item.niche === right;
-
-        return hasLeft && hasRight;
-      }
+    return (
+      signalTypes.some((type) =>
+        hasSignal(signals, type, left)
+      ) &&
+      signalTypes.some((type) =>
+        hasSignal(signals, type, right)
+      )
     );
   }
+
+  return hasSignal(
+    signals,
+    explorer.type,
+    explorer.value
+  );
+}
+
+export const buildSignalExploration = (
+  creatives: Creative[],
+  explorer: SignalExplorer | null
+) => {
+  if (!explorer) return null;
+
+  const normalizedExplorer =
+    normalizeExplorer(explorer);
+
+  const matchingCreatives = creatives.filter(
+    (item) =>
+      matchesExplorer(item, normalizedExplorer)
+  );
 
   const visuals: Record<string, number> =
     {};
@@ -99,51 +115,49 @@ export const buildSignalExploration = (
   > = {};
 
   matchingCreatives.forEach((item) => {
-    item.visual_styles?.forEach(
-      (visual: string) => {
-        visuals[visual] =
-          (visuals[visual] || 0) + 1;
-      }
+    const signals =
+      extractCreativeSignals(item);
+
+    signals.visuals.forEach(
+      (visual) =>
+        incrementMap(visuals, visual)
     );
 
-    item.hook_types?.forEach(
-      (hook: string) => {
-        hooks[hook] =
-          (hooks[hook] || 0) + 1;
-      }
+    signals.hooks.forEach(
+      (hook) =>
+        incrementMap(hooks, hook)
     );
 
-    item.emotion_tags?.forEach(
-      (emotion: string) => {
-        emotions[emotion] =
-          (emotions[emotion] || 0) + 1;
-      }
+    signals.emotions.forEach(
+      (emotion) =>
+        incrementMap(emotions, emotion)
     );
 
-    if (item.cta) {
-      ctas[item.cta] =
-        (ctas[item.cta] || 0) + 1;
-    }
+    signals.ctas.forEach(
+      (cta) =>
+        incrementMap(ctas, cta)
+    );
 
-    if (item.niche) {
-      niches[item.niche] =
-        (niches[item.niche] || 0) + 1;
-    }
+    signals.niches.forEach(
+      (niche) =>
+        incrementMap(niches, niche)
+    );
 
-    if (item.platform) {
-      platforms[item.platform] =
-        (platforms[item.platform] || 0) +
-        1;
-    }
+    signals.platforms.forEach(
+      (platform) =>
+        incrementMap(platforms, platform)
+    );
   });
 
   return {
     matchingCreatives,
-    visuals,
-    hooks,
-    emotions,
-    ctas,
-    niches,
-    platforms,
+    regions: {
+      behavioralDrivers: emotions,
+      persuasionMechanisms: hooks,
+      visualLanguage: visuals,
+      commercialIntent: ctas,
+      platforms,
+      niches,
+    },
   };
 };

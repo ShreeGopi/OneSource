@@ -1,3 +1,4 @@
+import { Creative } from "./creative";
 import { RelationshipRecord } from "./relationships";
 import { ReinforcedStructure } from "./relationships";
 
@@ -33,10 +34,10 @@ export type RelationshipResult = {
 
 export type ReinforcedResult = {
   sortedReinforcedStructures:
-    ReinforcedStructure[];
+  ReinforcedStructure[];
 
   filteredReinforcedStructures:
-    ReinforcedStructure[];
+  ReinforcedStructure[];
 };
 
 export type TaxonomyCluster = {
@@ -73,10 +74,24 @@ export type CrossPlatformPattern = {
 
 export type PlatformResult = {
   topPlatformPatterns:
-    PlatformPatternInsight[];
+  PlatformPatternInsight[];
 
   crossPlatformData:
-    CrossPlatformPattern[];
+  CrossPlatformPattern[];
+};
+
+export type RegionalIntelligence = {
+  behavioralDrivers: Record<string, number>;
+  persuasionMechanisms: Record<string, number>;
+  visualLanguage: Record<string, number>;
+  commercialIntent: Record<string, number>;
+  platforms: Record<string, number>;
+  niches: Record<string, number>;
+};
+
+export type ExplorationData = {
+  matchingCreatives: Creative[];
+  regions: RegionalIntelligence;
 };
 
 export type IntelligenceResult = {

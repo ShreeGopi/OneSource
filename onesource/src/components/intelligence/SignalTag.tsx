@@ -1,9 +1,3 @@
-// ============================================================
-// OneSource — Signal Tag
-// Signals are NOT tags.
-// They are exploration nodes inside an intelligence graph.
-// ============================================================
-
 "use client";
 
 export type SignalType =
@@ -138,10 +132,9 @@ export function SignalTag({
         hover:-translate-y-[1px]
         hover:border-white/10
 
-        ${
-          size === "md"
-            ? "px-3 py-2 rounded-2xl"
-            : "px-2.5 py-1.5 rounded-xl"
+        ${size === "md"
+          ? "px-3 py-2 rounded-2xl"
+          : "px-2.5 py-1.5 rounded-xl"
         }
       `}
     >
@@ -177,15 +170,13 @@ export function SignalTag({
             tracking-wide
             transition-colors
             duration-200
-            ${
-              size === "md"
-                ? "text-xs"
-                : "text-[11px]"
+            ${size === "md"
+              ? "text-xs"
+              : "text-[11px]"
             }
-            ${
-              active
-                ? "text-white"
-                : "text-gray-300 group-hover:text-white"
+            ${active
+              ? "text-white"
+              : "text-gray-300 group-hover:text-white"
             }
           `}
         >

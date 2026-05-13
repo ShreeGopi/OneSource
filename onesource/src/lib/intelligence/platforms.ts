@@ -1,7 +1,3 @@
-import {
-  normalizeEmotion,
-  normalizeSignal,
-} from "../signals/normalize";
 import { Creative } from "../types/creative";
 import { PlatformResult } from "../types/intelligence";
 import { getStrengthLabel } from "../utils/scoring";
@@ -12,6 +8,7 @@ import {
 import {
   sumValues,
 } from "../utils/aggregation";
+import { extractCreativeSignals } from "../signals/extractSignals";
 
 export function buildPlatformInsights(
   creatives: Creative[],
@@ -23,31 +20,24 @@ export function buildPlatformInsights(
   > = {};
 
   creatives.forEach((item) => {
-    const platform =
-      normalizeSignal(item.platform);
+    const {
+      emotions,
+      hooks,
+      platforms,
+    } = extractCreativeSignals(item);
 
-    if (!platform) return;
+    platforms.forEach((platform) => {
+      if (!platformMap[platform]) {
+        platformMap[platform] = {};
+      }
 
-    if (!platformMap[platform]) {
-      platformMap[platform] = {};
-    }
+      emotions.forEach((emotion) => {
+        hooks.forEach((hook) => {
+          const key = `${emotion} + ${hook}`;
 
-    const emotions =
-      item.emotion_tags
-        ?.map(normalizeEmotion)
-        .filter((emotion): emotion is string => Boolean(emotion)) || [];
-
-    const hooks =
-      item.hook_types
-        ?.map(normalizeSignal)
-        .filter((hook): hook is string => Boolean(hook)) || [];
-
-    emotions.forEach((emotion) => {
-      hooks.forEach((hook) => {
-        const key = `${emotion} + ${hook}`;
-
-        platformMap[platform][key] =
-          (platformMap[platform][key] || 0) + 1;
+          platformMap[platform][key] =
+            (platformMap[platform][key] || 0) + 1;
+        });
       });
     });
   });

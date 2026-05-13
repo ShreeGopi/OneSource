@@ -2,6 +2,7 @@ import { getTopEntry } from "../utils/sorting";
 import { incrementMap } from "../utils/helpers";
 import { Creative } from "../types/creative";
 import { DatasetSummary } from "../types/intelligence";
+import { extractCreativeSignals } from "../signals/extractSignals";
 
 export function buildDatasetSummary(
   creatives: Creative[]
@@ -22,21 +23,26 @@ export function buildDatasetSummary(
   > = {};
 
   creatives.forEach((item) => {
-    item.emotion_tags?.forEach(
-      (emotion: string) => {
+    const signals =
+      extractCreativeSignals(item);
+
+    signals.emotions.forEach(
+      (emotion) => {
         incrementMap(emotionCount, emotion);
       }
     );
 
-    item.hook_types?.forEach(
-      (hook: string) => {
+    signals.hooks.forEach(
+      (hook) => {
         incrementMap(hookCount, hook);
       }
     );
 
-    if (item.platform) {
-      incrementMap(platformCount, item.platform);
-    }
+    signals.platforms.forEach(
+      (platform) => {
+        incrementMap(platformCount, platform);
+      }
+    );
   });
 
   return {

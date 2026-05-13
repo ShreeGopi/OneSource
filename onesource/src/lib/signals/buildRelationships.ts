@@ -1,14 +1,10 @@
 import {
-  normalizeEmotion,
-  normalizeSignal,
-} from "./normalize";
-
-import {
   RelationshipRecord,
   ReinforcedStructure,
 } from "../types/relationships";
 
 import { Creative } from "../types/creative";
+import { extractCreativeSignals } from "./extractSignals";
 
 export const buildRelationships = (
   creatives: Creative[]
@@ -24,25 +20,13 @@ export const buildRelationships = (
   > = {};
 
   creatives.forEach((item) => {
-
-    const emotions =
-      item.emotion_tags
-        ?.map(normalizeEmotion)
-        .filter(Boolean) || [];
-
-    const hooks =
-      item.hook_types
-        ?.map(normalizeSignal)
-        .filter(Boolean) || [];
-
-    const visuals =
-      item.visual_styles
-        ?.map(normalizeSignal)
-        .filter(Boolean) || [];
-
-    const cta = normalizeSignal(item.cta);
-
-    const niche = normalizeSignal(item.niche);
+    const {
+      emotions,
+      hooks,
+      visuals,
+      ctas,
+      niches,
+    } = extractCreativeSignals(item);
 
     emotions.forEach((emotion: string) => {
 
@@ -103,7 +87,7 @@ export const buildRelationships = (
         });
       });
 
-      if (cta) {
+      ctas.forEach((cta) => {
 
         const ctaKey =
           `Emotion-CTA::${emotion}::${cta}`;
@@ -121,9 +105,9 @@ export const buildRelationships = (
         reinforcedStructures[
           emotion
         ].totalStrength += 1;
-      }
+      });
 
-      if (niche) {
+      niches.forEach((niche) => {
 
         reinforcedStructures[
           emotion
@@ -135,13 +119,13 @@ export const buildRelationships = (
         reinforcedStructures[
           emotion
         ].totalStrength += 1;
-      }
+      });
     });
   });
 
   const relationships: RelationshipRecord[] =
     Object.entries(relationshipMap)
-      .filter(([_, count]) => count >= 2)
+      .filter(([, count]) => count >= 2)
       .map(([key, count]) => {
 
         const [type, left, right] =

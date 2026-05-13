@@ -2,315 +2,204 @@
 
 ## Creative Genome / Attention Intelligence
 
-**OneSource** is a structured intelligence system for analyzing internet attention patterns.
+OneSource is a structured intelligence system for understanding internet attention patterns.
 
-Instead of being just another AI content generator, OneSource focuses on building a **durable data moat** around high-performing internet creatives.
+It studies ecommerce creatives by turning hooks, emotions, visuals, CTAs, platforms, and niches into organized signals. Those signals can then be searched, compared, and explored to understand why certain creatives earn attention, trust, and action.
 
-The platform collects, tags, organizes, and analyzes winning creatives from platforms like:
+The goal is not to generate more content.
 
-- Amazon
-- TikTok
-- Meta Ads
-- Pinterest
-- Landing Pages
-- Viral Ecommerce Campaigns
+The goal is to understand the repeatable structures behind creative performance.
 
-The goal is simple:
+> Clean signal > more AI
 
-> Understand **why** certain creatives perform well — not just generate more content.
+## What OneSource Is
 
-Architecture We’ll Use
-Frontend
-Next.js
-Tailwind
-TypeScript
-Backend + DB
-Supabase
-Deployment
-Vercel later
+OneSource is infrastructure for creative and persuasion intelligence.
 
----
+It is designed to help answer questions like:
 
-# Project Vision
+- Why does this creative pull attention?
+- Which hooks repeat across winning examples?
+- What emotions show up with certain visual styles?
+- Which CTAs appear with specific persuasion structures?
+- How do patterns behave across platforms such as TikTok, Amazon, Meta ads, Pinterest, and landing pages?
 
-## “Creative Genome” / “Attention Intelligence”
+OneSource starts with ecommerce creatives, but the deeper idea is broader:
 
-A structured intelligence layer for internet attention patterns.
+> a structured intelligence layer for internet attention.
 
-### Focus Areas
+## What OneSource Is Not
 
-- Amazon listings
-- Ecommerce ads
-- Hooks & headlines
-- Thumbnails
-- CTAs
-- Landing pages
-- Viral creative formats
+OneSource is not:
 
----
+- an AI wrapper
+- a content generator
+- a viral prediction engine
+- a recommendation system
+- a generic analytics dashboard
 
-# Core Philosophy
+AI can help later with tagging, clustering, summarization, and organization.
 
-## We Are **NOT** Building
+AI is not the product moat.
 
-❌ A fragile AI wrapper dependent entirely on:
+The moat comes from:
 
-- Claude
-- OpenAI
-- Gemini
-- Other generative APIs
+- clean signal structure
+- normalized creative data
+- controlled vocabulary
+- reusable intelligence architecture
+- accumulated pattern relationships
+- searchable attention intelligence
 
----
+## How The System Works
 
-## We **ARE** Building
+OneSource follows a simple pipeline:
 
-✅ Durable value through:
+```text
+Creative data
+-> signal normalization
+-> intelligence extraction
+-> exploration UI
+```
 
-- Structured data
-- Workflow systems
-- Accumulated pattern intelligence
-- Searchable insights
-- Attention analysis
+At the data level, each creative can carry signals such as:
 
----
+- emotion
+- hook
+- visual style
+- CTA
+- platform
+- niche
+- pattern
 
-# Role of AI
+At the intelligence level, the system looks for:
 
-AI should only act as:
+- repeated emotion + hook patterns
+- relationships between hooks, visuals, CTAs, and niches
+- reinforced creative structures
+- platform-specific behavior
+- strongest co-signals
+- signal weighting and semantic hierarchy
 
-- Accelerator
-- Tagging assistant
-- Summarizer
-- Clustering layer
-- Pattern analysis tool
+The product is not trying to guess what will go viral.
 
-AI is **NOT** the core business.
+It is trying to make attention patterns easier to see, compare, and understand.
 
-The real value comes from:
+## Current Phase: Pause Phase
 
-- Proprietary organization
-- Structured datasets
-- Searchable creative intelligence
-- Long-term accumulated attention patterns
+OneSource is currently in Pause Phase.
 
----
+Pause Phase exists because the intelligence layer was evolving quickly, and the foundation needed to become clearer before adding more depth.
 
-# Main Product Direction
+This phase focuses on:
 
-## Step 1 — Collect Winning Creatives
+- stabilizing architecture
+- improving signal quality
+- fixing exploration behavior
+- making the UX easier to understand
+- clarifying the product story
+- avoiding premature AI or graph complexity
 
-Gather high-performing ecommerce creatives from:
+This is intentional restraint.
 
-- Amazon listings
-- TikTok ads
-- Meta ads
-- Pinterest
-- Landing pages
-- Viral ecommerce content
+The project is becoming structurally trustworthy before it becomes more powerful.
 
----
+## Completed Work
 
-## Step 2 — Structure the Data
+Current foundations include:
 
-For each creative, store:
+- governed signal vocabulary
+- validation and signal quality checks
+- normalized signal extraction
+- universal signal exploration
+- breadcrumb traversal
+- weighted signal rendering
+- strongest co-signal analysis
+- pattern, relationship, taxonomy, platform, and summary intelligence
+- minimal Vitest coverage for intelligence logic
+- production build and lint verification
+- custom homepage and documentation cleanup
 
-- Screenshots / images
-- Hooks / headlines
-- CTA styles
-- Niche / category
-- Source platform
-- Links
+The core app now behaves less like a tagged gallery and more like an intelligence workspace.
 
----
+## Application
 
-## Step 3 — Analyze WHY It Works
+The Next.js app lives in:
 
-Instead of:
+```text
+onesource/
+```
 
-> “Generate random content”
+Main routes:
 
-We focus on:
+- `/` - OneSource entry screen
+- `/gallery` - intelligence exploration workspace
+- `/admin` - manual creative ingestion
 
-> “Understanding repeatable attention patterns.”
+Useful commands:
 
----
+```bash
+cd onesource
+npm run dev
+npm run test
+npm run lint
+npm run build
+```
 
-# Core MVP
+The production build may need network access because the app uses Google-hosted Next fonts.
 
-## 1. Collect 50–100 Ecommerce Creatives
+## Technology
 
-Initially done:
+Current stack:
 
-- Manually
-- Or semi-manually
+- Next.js
+- TypeScript
+- Tailwind CSS
+- Supabase
+- Vitest
 
-### Store Data Such As
+Deployment target:
 
-- Screenshots/images
-- Hooks/headlines
-- CTA styles
-- Niche/category
-- Source/platform
-- Links
+- Vercel later
 
----
+## Intentionally Out Of Scope Right Now
 
-## 2. Add Structured Tagging
+During Pause Phase, OneSource is not adding:
 
-### Emotion Tags
+- graph systems
+- AI reasoning engines
+- recommendation logic
+- prediction systems
+- ontology expansion
+- embeddings infrastructure
+- feature-heavy UX
+- Playwright or Cypress
+- Supabase integration tests
 
-Examples:
+Those may become useful later.
 
-- Fear
-- Aspiration
-- Curiosity
-- Luxury
-- Status
-- Urgency
+They are not the right next move yet.
 
----
+## Long-Term Direction
 
-### Hook Type Tags
+The long-term direction is:
 
-Examples:
+> Bloomberg Terminal for Internet Attention
 
-- Problem → Solution
-- Before → After
-- Authority
-- Shocking
-- Transformation
+or:
 
----
+> Creative Genome for ecommerce persuasion.
 
-### Visual Style Tags
+Most tools help people generate more content.
 
-Examples:
+OneSource is trying to understand the DNA of attention:
 
-- UGC
-- Cinematic
-- Luxury
-- Clean
-- Meme-style
+- what repeats
+- what reinforces
+- what changes by platform
+- what emotional and visual systems keep appearing
+- what creative structures become durable over time
 
----
+The long-term value is accumulated, structured attention intelligence.
 
-### Other Tags
-
-- Creator archetype
-- CTA patterns
-- Product positioning
-- Audience intent
-
----
-
-# Searchable Discovery
-
-Users can search/filter creatives by:
-
-- Emotion
-- Hook type
-- Visual style
-- Niche
-- CTA type
-- Platform
-
----
-
-## Example Queries
-
-- “Show luxury skincare hooks”
-- “Show curiosity-based thumbnails”
-- “Show fitness before-after ads”
-
----
-
-# Insights Layer
-
-The system identifies:
-
-- Repeated winning patterns
-- Trending emotional triggers
-- Dominant visual styles
-- Fatigue / oversaturation
-- Hook correlations
-
----
-
-## Example Insight
-
-> “Most high-performing skincare creatives currently use authority + transformation framing.”
-
----
-
-# Strategic Insight
-
-## The Real Moat
-
-The moat is:
-
-> Structured Attention Intelligence
-
-NOT:
-
-> AI Generation
-
-AI helps analyze the data.
-
-But the long-term value comes from:
-
-- Proprietary organization
-- Searchable pattern intelligence
-- Accumulated attention data
-- Workflow systems
-- Historical creative insights
-
----
-
-# Long-Term Vision
-
-OneSource aims to become:
-
-> “Bloomberg Terminal for Internet Attention”
-
-or
-
-> “Search Engine for Winning Ecommerce Psychology”
-
----
-
-# Why This Matters
-
-Most tools generate content.
-
-Very few systems understand:
-
-- Why attention works
-- Which patterns repeat
-- What emotional triggers convert
-- How creative trends evolve over time
-
-OneSource is designed to become:
-
-> A structured intelligence layer for ecommerce growth psychology.
-
----
-
-# Future Possibilities
-
-- AI-assisted tagging
-- Creative trend prediction
-- Viral pattern clustering
-- Competitor creative intelligence
-- Attention heatmaps
-- Creative fatigue detection
-- Ecommerce conversion research
-- Ad intelligence workflows
-- Brand creative memory systems
-
----
-
-# Core Principle
-
-> “Don’t just generate creatives.
->
-> Understand the DNA of attention.”
+Not more AI output.
