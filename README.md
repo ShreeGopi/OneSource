@@ -1,6 +1,6 @@
 # OneSource
 
-## Mapping the DNA of Attention
+## Structured Attention Intelligence
 
 OneSource is a structured intelligence system for understanding internet attention patterns.
 
