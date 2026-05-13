@@ -2,149 +2,228 @@ import Link from "next/link";
 
 const learningPoints = [
   {
+    marker: "01",
     title: "Why creatives earn attention",
-    body: "Study the emotional triggers, visual choices, and hooks that repeatedly pull people into ecommerce creatives.",
+    body: "The signals that pull people into a creative.",
   },
   {
+    marker: "02",
     title: "Which patterns repeat",
-    body: "See when signals appear often enough to become useful structures instead of isolated observations.",
+    body: "The structures that show up again and again.",
   },
   {
-    title: "How signals work together",
-    body: "Trace how emotions, hooks, CTAs, niches, and platforms reinforce each other across a dataset.",
+    marker: "03",
+    title: "How signals connect",
+    body: "The relationships behind persuasion systems.",
   },
 ];
 
-const signals = ["Emotions", "Hooks", "CTAs", "Platforms", "Niches"];
-const currentSystem = ["Signals", "Patterns", "Governance", "Verification"];
+const signalNodes = [
+  {
+    label: "Emotions",
+    code: "EM",
+    x: 86,
+    y: 136,
+    path: "M148 136 C178 140 206 166 220 195",
+  },
+  {
+    label: "Hooks",
+    code: "HK",
+    x: 96,
+    y: 238,
+    path: "M158 238 C184 228 206 214 220 205",
+  },
+  {
+    label: "Visuals",
+    code: "VI",
+    x: 84,
+    y: 320,
+    path: "M146 320 C176 276 206 232 220 212",
+  },
+  {
+    label: "CTAs",
+    code: "CT",
+    x: 430,
+    y: 128,
+    path: "M368 128 C330 134 306 164 300 195",
+  },
+  {
+    label: "Platforms",
+    code: "PL",
+    x: 440,
+    y: 240,
+    path: "M378 240 C350 230 320 214 302 205",
+  },
+  {
+    label: "Niches",
+    code: "NI",
+    x: 430,
+    y: 316,
+    path: "M368 316 C338 274 312 232 302 212",
+  },
+];
+
+const systemLayers = [
+  {
+    label: "Signal Layer",
+    items: "Emotions, hooks, visuals, CTAs",
+  },
+  {
+    label: "Intelligence Layer",
+    items: "Patterns, relationships, structures",
+  },
+  {
+    label: "Exploration Layer",
+    items: "Gallery, traversal, co-signals",
+  },
+];
 
 export default function Home() {
   return (
-    <main
-      className="min-h-screen bg-[#1d1d1d] text-[#f2eadf]"
-      style={{
-        backgroundImage:
-          "linear-gradient(rgba(242,234,223,0.055) 1px, transparent 1px), linear-gradient(90deg, rgba(242,234,223,0.055) 1px, transparent 1px), linear-gradient(rgba(242,234,223,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(242,234,223,0.025) 1px, transparent 1px)",
-        backgroundSize: "48px 48px, 48px 48px, 12px 12px, 12px 12px",
-      }}
-    >
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-5 py-7 sm:px-8">
-        <header className="flex items-start justify-between border-b border-[#f2eadf]/70 pb-4">
+    <main className="min-h-[100dvh] bg-[#f5f1e8] text-[#22201c]">
+      <div
+        className="mx-auto grid min-h-[100dvh] w-full max-w-7xl grid-rows-[auto_1fr_auto] px-4 py-4 sm:px-6 lg:px-8"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(34,32,28,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(34,32,28,0.045) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+        }}
+      >
+        <header className="grid grid-cols-12 items-center gap-3 border-b border-[#22201c]/20 pb-3">
           <Link
             href="/"
-            className="relative border border-[#f2eadf]/80 px-7 py-3 text-lg tracking-wide text-[#f2eadf]"
+            className="col-span-5 w-fit rounded-md border border-[#22201c]/20 bg-[#fffaf1]/75 px-4 py-2 text-sm font-semibold tracking-wide shadow-sm shadow-[#22201c]/5 sm:col-span-4 sm:px-5 sm:text-base lg:col-span-3"
           >
-            <span className="absolute -left-1.5 -top-1.5 h-3 w-3 border-l border-t border-[#f2eadf]/80" />
-            <span className="absolute -right-1.5 -top-1.5 h-3 w-3 border-r border-t border-[#f2eadf]/80" />
-            <span className="absolute -bottom-1.5 -left-1.5 h-3 w-3 border-b border-l border-[#f2eadf]/80" />
-            <span className="absolute -bottom-1.5 -right-1.5 h-3 w-3 border-b border-r border-[#f2eadf]/80" />
             OneSource
           </Link>
 
-          <nav className="flex border border-[#f2eadf]/55 text-xs uppercase tracking-[0.18em] text-[#f2eadf] sm:text-sm">
+          <nav className="col-span-7 flex justify-self-end rounded-md border border-[#22201c]/15 bg-[#fffaf1]/65 text-[10px] uppercase tracking-[0.15em] text-[#3a352d] shadow-sm shadow-[#22201c]/5 sm:col-span-8 sm:text-xs lg:col-span-9">
             <Link
               href="/gallery"
-              className="px-5 py-3 transition hover:bg-[#f2eadf] hover:text-[#1d1d1d]"
+              className="px-3 py-2 transition hover:bg-[#22201c] hover:text-[#fffaf1] sm:px-5"
             >
               Gallery
             </Link>
             <Link
               href="/admin"
-              className="border-l border-[#f2eadf]/55 px-5 py-3 transition hover:bg-[#f2eadf] hover:text-[#1d1d1d]"
+              className="border-l border-[#22201c]/15 px-3 py-2 transition hover:bg-[#22201c] hover:text-[#fffaf1] sm:px-5"
             >
               Admin
             </Link>
           </nav>
         </header>
 
-        <section className="grid flex-1 gap-10 border-b border-[#f2eadf]/55 py-10 lg:grid-cols-[1fr_1.02fr_0.92fr] lg:items-center">
-          <div>
-            <p className="mb-5 text-xs uppercase tracking-[0.28em] text-[#d8d0c2]">
-              Creative Genome / Attention Intelligence
+        <section className="grid min-h-0 grid-cols-12 items-center gap-4 py-4 lg:gap-5">
+          <div className="col-span-12 min-w-0 md:col-span-5 lg:col-span-4">
+            <p className="mb-3 text-[10px] uppercase tracking-[0.22em] text-[#7c7265] sm:text-xs">
+              Structured Attention Intelligence
             </p>
 
-            <h1 className="relative w-fit text-6xl font-semibold leading-none tracking-tight text-[#f2eadf] sm:text-7xl">
+            <h1 className="max-w-sm text-[clamp(2.55rem,5.4vw,4.45rem)] font-semibold leading-[0.92] tracking-tight">
               OneSource
-              <span className="absolute -left-2 top-0 h-5 w-5 border-l border-t border-[#f2eadf]/70" />
-              <span className="absolute -right-3 bottom-1 h-5 w-5 border-b border-r border-[#f2eadf]/70" />
             </h1>
 
-            <p className="mt-7 max-w-xl text-2xl leading-snug text-[#f2eadf]">
+            <p className="mt-4 max-w-md text-[clamp(1.1rem,2vw,1.42rem)] leading-tight text-[#3a352d]">
               Structured intelligence for internet attention patterns.
             </p>
 
-            <p className="mt-6 max-w-lg text-base leading-8 text-[#b8b2a8]">
-              OneSource studies ecommerce creatives by turning hooks, emotions,
-              visual language, CTAs, platforms, and niches into reusable
-              attention signals. The goal is to understand why creative
-              patterns work, not to generate more noise.
+            <p className="mt-4 max-w-sm text-sm leading-6 text-[#6f675d]">
+              Turn ecommerce creative signals into a clear system for studying
+              why attention patterns repeat.
             </p>
 
-            <div className="mt-9 flex flex-wrap gap-4">
+            <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href="/gallery"
-                className="border border-[#f2eadf] px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-[#f2eadf] transition hover:bg-[#f2eadf] hover:text-[#1d1d1d]"
+                className="rounded-md bg-[#22201c] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#fffaf1] transition hover:bg-[#3a352d] sm:px-5"
               >
                 Open Intelligence
               </Link>
               <Link
                 href="/admin"
-                className="border border-[#f2eadf]/60 px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-[#d8d0c2] transition hover:border-[#f2eadf] hover:text-[#f2eadf]"
+                className="rounded-md border border-[#22201c]/20 bg-[#fffaf1]/70 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#3a352d] transition hover:border-[#22201c]/45 sm:px-5"
               >
                 Add Creative
               </Link>
             </div>
           </div>
 
-          <div className="relative mx-auto aspect-square w-full max-w-[420px] border border-[#f2eadf]/25">
-            <div className="absolute inset-8 rounded-full border border-[#f2eadf]/80" />
-            <div className="absolute inset-12 rounded-full border border-[#f2eadf]/45" />
-            <div className="absolute left-1/2 top-0 h-full border-l border-dashed border-[#f2eadf]/30" />
-            <div className="absolute left-0 top-1/2 w-full border-t border-dashed border-[#f2eadf]/30" />
-            <div className="absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#f2eadf]/75 bg-[#1d1d1d] text-center">
-              <div className="flex h-full items-center justify-center text-sm font-semibold">
-                OneSource
-              </div>
+          <div className="relative col-span-12 mx-auto aspect-[1.18/1] w-full max-w-[420px] md:col-span-7 lg:col-span-4 lg:max-w-[460px]">
+            <svg
+              className="absolute inset-0 h-full w-full"
+              viewBox="0 0 520 430"
+              fill="none"
+              aria-hidden="true"
+            >
+              <defs>
+                <radialGradient id="source-glow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#b9d8cf" stopOpacity="0.42" />
+                  <stop offset="100%" stopColor="#b9d8cf" stopOpacity="0" />
+                </radialGradient>
+                {signalNodes.map((node, index) => (
+                  <path key={node.label} id={`signal-path-${index}`} d={node.path} />
+                ))}
+              </defs>
+
+              <circle cx="260" cy="202" r="96" fill="url(#source-glow)" />
+
+              {signalNodes.map((node, index) => (
+                <g key={node.label}>
+                  <use href={`#signal-path-${index}`} className="circuit-path" />
+                  <use
+                    href={`#signal-path-${index}`}
+                    className="circuit-light"
+                    style={{ animationDelay: `${index * 0.58}s` }}
+                  />
+                </g>
+              ))}
+            </svg>
+
+            <div
+              className="source-node absolute z-10 -translate-x-1/2 -translate-y-1/2 px-6 py-3 text-base font-semibold"
+              style={{
+                left: `${(260 / 520) * 100}%`,
+                top: `${(202 / 430) * 100}%`,
+              }}
+            >
+              OneSource
             </div>
 
-            {signals.map((signal, index) => {
-              const positions = [
-                "left-1/2 top-8 -translate-x-1/2",
-                "right-8 top-1/2 -translate-y-1/2",
-                "bottom-10 right-[22%]",
-                "bottom-10 left-[22%]",
-                "left-8 top-1/2 -translate-y-1/2",
-              ];
-
-              return (
-                <div
-                  key={signal}
-                  className={`absolute ${positions[index]} flex h-20 w-20 items-center justify-center rounded-full border border-[#f2eadf]/80 bg-[#1d1d1d] px-2 text-center text-[11px] uppercase tracking-wide text-[#f2eadf]`}
-                >
-                  {signal}
-                </div>
-              );
-            })}
+            {signalNodes.map((node) => (
+              <div
+                key={node.label}
+                className="signal-node absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 px-3 py-2 text-[13px]"
+                style={{
+                  left: `${(node.x / 520) * 100}%`,
+                  top: `${(node.y / 430) * 100}%`,
+                }}
+              >
+                <span className="flex h-5 w-5 items-center justify-center rounded-md border border-[#22201c]/10 bg-[#f5f1e8]/60 text-[9px] font-semibold text-[#7c7265]">
+                  {node.code}
+                </span>
+                <span>{node.label}</span>
+              </div>
+            ))}
           </div>
 
-          <aside className="border border-[#f2eadf]/70 p-6">
-            <p className="mb-5 text-xs uppercase tracking-[0.22em] text-[#f2eadf]">
-              What it helps you understand
+          <aside className="col-span-12 rounded-xl border border-[#22201c]/10 bg-[#fffaf1]/72 p-4 shadow-sm shadow-[#22201c]/5 md:col-span-12 lg:col-span-4">
+            <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-[#7c7265] sm:text-xs">
+              Understand
             </p>
-            <div className="divide-y divide-[#f2eadf]/35">
+            <div className="grid gap-2">
               {learningPoints.map((point) => (
                 <div
                   key={point.title}
-                  className="grid gap-4 py-5 sm:grid-cols-[88px_1fr]"
+                  className="grid grid-cols-[2rem_1fr] gap-3 rounded-lg border border-[#22201c]/8 bg-[#f8f4ec]/75 p-3"
                 >
-                  <div className="flex h-16 w-16 items-center justify-center border border-[#f2eadf]/65 text-xl">
-                    {point.title.charAt(0)}
+                  <div className="flex h-8 w-8 items-center justify-center rounded-md border border-[#22201c]/10 text-[10px] font-semibold text-[#8f7652]">
+                    {point.marker}
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold uppercase tracking-[0.1em] text-[#f2eadf]">
+                    <h2 className="text-[12px] font-semibold uppercase tracking-[0.06em] text-[#2d2923]">
                       {point.title}
                     </h2>
-                    <p className="mt-2 text-sm leading-6 text-[#b8b2a8]">
+                    <p className="mt-1 text-xs leading-5 text-[#6f675d]">
                       {point.body}
                     </p>
                   </div>
@@ -154,24 +233,87 @@ export default function Home() {
           </aside>
         </section>
 
-        <section className="grid gap-8 py-7 lg:grid-cols-[0.55fr_1fr] lg:items-center">
-          <p className="text-xs uppercase tracking-[0.22em] text-[#f2eadf]">
+        <section className="grid grid-cols-12 gap-3 border-t border-[#22201c]/15 py-3 lg:items-center">
+          <p className="col-span-12 text-[10px] uppercase tracking-[0.2em] text-[#7c7265] sm:text-xs lg:col-span-3">
             Current system
           </p>
-          <div className="grid gap-3 sm:grid-cols-4">
-            {currentSystem.map((item, index) => (
-              <div key={item} className="flex items-center gap-3">
-                <div className="flex min-h-16 flex-1 items-center justify-center border border-[#f2eadf]/65 px-3 text-center text-xs uppercase tracking-[0.12em] text-[#f2eadf]">
-                  {item}
+          <div className="col-span-12 grid gap-2 md:grid-cols-3 lg:col-span-9">
+            {systemLayers.map((layer, index) => (
+              <div
+                key={layer.label}
+                className="relative rounded-lg border border-[#22201c]/10 bg-[#fffaf1]/72 p-3 shadow-sm shadow-[#22201c]/5"
+              >
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#22201c] text-[10px] font-semibold text-[#fffaf1]">
+                    {index + 1}
+                  </span>
+                  <h2 className="text-xs font-semibold uppercase tracking-[0.08em] text-[#2d2923]">
+                    {layer.label}
+                  </h2>
                 </div>
-                {index < currentSystem.length - 1 && (
-                  <span className="hidden text-[#f2eadf]/70 sm:block">→</span>
-                )}
+                <p className="text-xs leading-5 text-[#6f675d]">{layer.items}</p>
               </div>
             ))}
           </div>
         </section>
       </div>
+
+      <style>{`
+        .source-node {
+          border: 1px solid rgb(125 125 125 / 32%);
+          border-radius: 16px;
+          background: rgba(255, 250, 241, 0.78);
+          box-shadow: 0 14px 34px rgb(255 255 255 / 7%), 0 0 0 10px rgb(252 252 252 / 10%);
+          backdrop-filter: blur(14px);
+        }
+
+        .signal-node {
+          border: 1px solid rgba(34, 32, 28, 0.075);
+          border-radius: 999px;
+          background: rgba(255, 250, 241, 0.54);
+          box-shadow: 0 8px 18px rgba(34, 32, 28, 0.055);
+          backdrop-filter: blur(12px);
+        }
+
+        .circuit-path {
+          stroke: rgb(0 0 0 / 2%);
+          stroke-width: 9px;
+          stroke-linecap: square;
+          fill: none;
+        } 
+
+        .circuit-light {
+             stroke: rgb(0 0 0);
+            stroke-width: 1px;
+            stroke-linecap: square;
+            fill: none;
+            opacity: 1%;
+            stroke-dasharray: 126 190;
+            stroke-dashoffset: 190;
+            filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.42));
+            animation: circuit-flow 4900ms cubic-bezier(1, 0.84, 1, 0.71) infinite;
+        }
+
+        @keyframes circuit-flow {
+          0% {
+            opacity: 0;
+            stroke-dashoffset: 190;
+          }
+          22% {
+            opacity: 0.1;
+          }
+          50% {
+            opacity: 0.46;
+          }
+          76% {
+            opacity: 0.16;
+          }
+          100% {
+            opacity: 0;
+            stroke-dashoffset: -56;
+          }
+        }
+      `}</style>
     </main>
   );
 }
