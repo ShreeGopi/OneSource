@@ -1,6 +1,6 @@
 # OneSource
 
-## Creative Genome / Attention Intelligence
+## Structured Attention Intelligence
 
 OneSource is a structured intelligence system for understanding internet attention patterns.
 
