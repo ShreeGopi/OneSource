@@ -2,127 +2,130 @@
 
 ## Structured Attention Intelligence
 
-OneSource is a structured intelligence system for understanding internet attention patterns.
+OneSource is a project for studying internet attention patterns.
 
-It studies ecommerce creatives by turning hooks, emotions, visuals, CTAs, platforms, and niches into organized signals. Those signals can then be searched, compared, and explored to understand why certain creatives earn attention, trust, and action.
+Right now it focuses on ecommerce creatives — things like hooks, emotions, visuals, CTAs, platforms, and niches — and tries to organize them into signals that can actually be explored and compared.
 
-The goal is not to generate more content.
+The goal isn’t to generate more AI content.
 
-The goal is to understand the repeatable structures behind creative performance.
+The goal is to understand why certain creative patterns keep working.
 
-> Clean signal > more AI
+> clean signal > more AI
 
-## What OneSource Is
+---
 
-OneSource is infrastructure for creative and persuasion intelligence.
+## What OneSource Does
 
-It is designed to help answer questions like:
+Most tools try to help people create more content faster.
 
-- Why does this creative pull attention?
-- Which hooks repeat across winning examples?
-- What emotions show up with certain visual styles?
-- Which CTAs appear with specific persuasion structures?
-- How do patterns behave across platforms such as TikTok, Amazon, Meta ads, Pinterest, and landing pages?
+OneSource goes in the opposite direction.
 
-OneSource starts with ecommerce creatives, but the deeper idea is broader:
+It tries to slow things down and study the structure behind attention:
 
-> a structured intelligence layer for internet attention.
+* what hooks repeat
+* which emotions appear together
+* how visuals reinforce persuasion
+* what changes across platforms
+* which patterns keep showing up again and again
 
-## What OneSource Is Not
+It started with ecommerce because ecommerce creatives are structured enough to compare reliably.
+
+But the bigger idea is broader than ecommerce.
+
+---
+
+## What It Is Not
 
 OneSource is not:
 
-- an AI wrapper
-- a content generator
-- a viral prediction engine
-- a recommendation system
-- a generic analytics dashboard
+* an AI wrapper
+* a chatbot
+* a content generator
+* a viral prediction tool
+* a recommendation engine
 
-AI can help later with tagging, clustering, summarization, and organization.
+AI is useful during development and organization, but it’s not really the core idea here.
 
-AI is not the product moat.
+The interesting part is the structure:
 
-The moat comes from:
+* normalized signals
+* repeatable patterns
+* relationships between creative behaviors
+* accumulated attention data over time
 
-- clean signal structure
-- normalized creative data
-- controlled vocabulary
-- reusable intelligence architecture
-- accumulated pattern relationships
-- searchable attention intelligence
+---
 
-## How The System Works
+## How It Works
 
-OneSource follows a simple pipeline:
+The system currently follows a pretty simple flow:
 
 ```text
-Creative data
--> signal normalization
--> intelligence extraction
--> exploration UI
+creative data
+→ signal cleanup
+→ pattern extraction
+→ exploration workspace
 ```
 
-At the data level, each creative can carry signals such as:
+Each creative can contain signals like:
 
-- emotion
-- hook
-- visual style
-- CTA
-- platform
-- niche
-- pattern
+* emotions
+* hooks
+* visual styles
+* CTAs
+* platforms
+* niches
 
-At the intelligence level, the system looks for:
+From there, OneSource looks for:
 
-- repeated emotion + hook patterns
-- relationships between hooks, visuals, CTAs, and niches
-- reinforced creative structures
-- platform-specific behavior
-- strongest co-signals
-- signal weighting and semantic hierarchy
+* repeated patterns
+* strongest co-signals
+* reinforced structures
+* platform behavior
+* signal relationships
 
-The product is not trying to guess what will go viral.
+The idea is to make attention patterns easier to inspect instead of guessing what “might go viral.”
 
-It is trying to make attention patterns easier to see, compare, and understand.
+---
 
-## Current Phase: Pause Phase
+## Current State
 
-OneSource is currently in Pause Phase.
+OneSource is currently in what I call the “Pause Phase.”
 
-Pause Phase exists because the intelligence layer was evolving quickly, and the foundation needed to become clearer before adding more depth.
+The project was evolving quickly, so I intentionally stopped adding major features for a while and focused on making the foundation cleaner and easier to understand.
 
-This phase focuses on:
+Most of the recent work has been around:
 
-- stabilizing architecture
-- improving signal quality
-- fixing exploration behavior
-- making the UX easier to understand
-- clarifying the product story
-- avoiding premature AI or graph complexity
+* stabilizing the intelligence layer
+* cleaning signal behavior
+* improving exploration UX
+* fixing inconsistent traversal logic
+* simplifying the product story
+* reducing unnecessary complexity
 
-This is intentional restraint.
+That restraint ended up helping the product a lot.
 
-The project is becoming structurally trustworthy before it becomes more powerful.
+---
 
-## Completed Work
+## Current Features
 
 Current foundations include:
 
-- governed signal vocabulary
-- validation and signal quality checks
-- normalized signal extraction
-- universal signal exploration
-- breadcrumb traversal
-- weighted signal rendering
-- strongest co-signal analysis
-- pattern, relationship, taxonomy, platform, and summary intelligence
-- minimal Vitest coverage for intelligence logic
-- production build and lint verification
-- custom homepage and documentation cleanup
+* governed signal vocabulary
+* signal quality validation
+* normalized signal extraction
+* universal signal exploration
+* weighted signal rendering
+* breadcrumb traversal
+* strongest co-signal analysis
+* pattern + platform intelligence
+* minimal Vitest coverage
+* production build + lint verification
 
-The core app now behaves less like a tagged gallery and more like an intelligence workspace.
+The app now feels more like an intelligence workspace than a tagged gallery.
 
-## Application
+---
+
+## App Structure
 
 The Next.js app lives in:
 
@@ -132,11 +135,11 @@ onesource/
 
 Main routes:
 
-- `/` - OneSource entry screen
-- `/gallery` - intelligence exploration workspace
-- `/admin` - manual creative ingestion
+* `/` → entry screen
+* `/gallery` → intelligence workspace
+* `/admin` → creative ingestion + governance
 
-Useful commands:
+Commands:
 
 ```bash
 cd onesource
@@ -146,60 +149,45 @@ npm run lint
 npm run build
 ```
 
-The production build may need network access because the app uses Google-hosted Next fonts.
+---
 
-## Technology
+## Stack
 
 Current stack:
 
-- Next.js
-- TypeScript
-- Tailwind CSS
-- Supabase
-- Vitest
+* Next.js
+* TypeScript
+* Tailwind
+* Supabase
+* Vitest
 
-Deployment target:
+---
 
-- Vercel later
+## Out Of Scope Right Now
 
-## Intentionally Out Of Scope Right Now
+Things intentionally NOT being added yet:
 
-During Pause Phase, OneSource is not adding:
+* graph systems
+* AI reasoning engines
+* recommendation systems
+* embeddings/vector infrastructure
+* ontology expansion
+* feature-heavy UX
 
-- graph systems
-- AI reasoning engines
-- recommendation logic
-- prediction systems
-- ontology expansion
-- embeddings infrastructure
-- feature-heavy UX
-- Playwright or Cypress
-- Supabase integration tests
+Trying to keep the foundation clean before making the system more complex.
 
-Those may become useful later.
-
-They are not the right next move yet.
+---
 
 ## Long-Term Direction
 
-The long-term direction is:
+The long-term idea is something closer to:
 
-> Bloomberg Terminal for Internet Attention
+> a structured intelligence layer for internet attention
 
 or:
 
-> Creative Genome for ecommerce persuasion.
+> a creative genome for persuasion patterns
 
-Most tools help people generate more content.
+Most products help generate more content.
 
-OneSource is trying to understand the DNA of attention:
-
-- what repeats
-- what reinforces
-- what changes by platform
-- what emotional and visual systems keep appearing
-- what creative structures become durable over time
-
-The long-term value is accumulated, structured attention intelligence.
-
-Not more AI output.
+OneSource is more interested in understanding the patterns underneath it.
