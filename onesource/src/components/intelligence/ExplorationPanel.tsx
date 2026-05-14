@@ -33,15 +33,15 @@ function ExplorationChain({
             <button
               onClick={() => onJump(i)}
               className={`text-xs px-1.5 py-0.5 rounded transition-all ${isActive
-                ? "text-white font-medium"
-                : "text-gray-600 hover:text-gray-400"
+                ? "text-[#22201c] font-medium"
+                : "text-[#7c7265] hover:text-[#3a352d]"
                 }`}
             >
               {signal.value}
             </button>
 
             {!isActive && (
-              <span className="text-gray-800 text-xs">→</span>
+              <span className="text-xs text-[#8a8174]">-&gt;</span>
             )}
           </span>
         );
@@ -64,8 +64,8 @@ function CreativesStrip({
   const visible = creatives.slice(0, 6);
 
   return (
-    <div className="border-t border-gray-800/60 pt-4">
-      <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-3">
+    <div className="border-t border-[#22201c]/10 pt-4">
+      <p className="mb-3 text-[10px] uppercase tracking-wider text-[#7c7265]">
         {creatives.length} matching creative
         {creatives.length !== 1 ? "s" : ""}
       </p>
@@ -74,9 +74,9 @@ function CreativesStrip({
         {visible.map((item) => (
           <div
             key={item.id}
-            className="bg-black/60 border border-gray-800/60 rounded-lg p-3 hover:border-gray-700 transition"
+            className="rounded-lg border border-[#22201c]/10 bg-[#f8f4ec]/75 p-3 transition hover:border-[#7f9f94]"
           >
-            <p className="text-xs font-medium text-white truncate">
+            <p className="truncate text-xs font-medium text-[#22201c]">
               {item.title}
             </p>
 
@@ -93,10 +93,10 @@ function CreativesStrip({
               </div>
             )}
 
-            <p className="text-[10px] text-gray-700 mt-2 capitalize">
+            <p className="mt-2 text-[10px] capitalize text-[#8a8174]">
               {[item.platform, item.niche]
                 .filter(Boolean)
-                .join(" · ")}
+                .join(" - ")}
             </p>
           </div>
         ))}
@@ -202,13 +202,13 @@ export function ExplorationPanel({
   })();
 
   return (
-    <div className="mt-8 rounded-2xl border border-gray-700/60 bg-[#080808] overflow-hidden">
+    <div className="mt-8 overflow-hidden rounded-2xl border border-[#22201c]/8 bg-[#fffaf1]/76 shadow-sm shadow-[#22201c]/4">
 
       {/* Header */}
 
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800/60">
+      <div className="flex items-center justify-between border-b border-[#22201c]/10 px-5 py-4">
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-[10px] text-gray-600 uppercase tracking-wider">
+          <span className="text-[10px] uppercase tracking-wider text-[#7c7265]">
             Exploring
           </span>
 
@@ -220,7 +220,7 @@ export function ExplorationPanel({
           />
 
           {matchCount > 0 && (
-            <span className="text-xs text-gray-600">
+            <span className="text-xs text-[#7c7265]">
               {matchCount} creative
               {matchCount !== 1 ? "s" : ""}
             </span>
@@ -229,16 +229,16 @@ export function ExplorationPanel({
 
         <button
           onClick={onClose}
-          className="text-[11px] text-gray-700 hover:text-white transition"
+          className="text-[11px] text-[#7c7265] transition hover:text-[#22201c]"
         >
-          ✕ close
+          x close
         </button>
       </div>
 
       {/* Breadcrumb */}
 
       {chain.length > 1 && (
-        <div className="px-5 py-3 border-b border-gray-800/40">
+        <div className="border-b border-[#22201c]/10 px-5 py-3">
           <ExplorationChain
             chain={chain}
             onJump={onChainJump}
@@ -254,7 +254,7 @@ export function ExplorationPanel({
             {/* Unified weighted signal field */}
 
             <div>
-              <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-3">
+              <p className="mb-3 text-[10px] uppercase tracking-wider text-[#7c7265]">
                 Common signals found with this
               </p>
 
@@ -267,8 +267,8 @@ export function ExplorationPanel({
             {/* Strongest co-signal */}
 
             {dominantSignal && (
-              <div className="rounded-xl border border-gray-800/40 bg-black/40 px-4 py-3">
-                <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-2">
+              <div className="rounded-xl border border-[#22201c]/10 bg-[#f8f4ec]/75 px-4 py-3">
+                <p className="mb-2 text-[10px] uppercase tracking-wider text-[#7c7265]">
                   Strongest related signal
                 </p>
 
@@ -281,7 +281,7 @@ export function ExplorationPanel({
                     active
                   />
 
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-[#5f574f]">
                     appears together {dominantSignal.count}x
                   </span>
                 </div>
@@ -296,7 +296,7 @@ export function ExplorationPanel({
             />
           </>
         ) : (
-          <p className="text-xs text-gray-700 py-2">
+          <p className="py-2 text-xs text-[#8a8174]">
             No related signals found for this exploration.
           </p>
         )}

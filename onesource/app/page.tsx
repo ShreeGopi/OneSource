@@ -128,8 +128,9 @@ export default function Home() {
             </p>
 
             <p className="mt-4 max-w-sm text-sm leading-6 text-[#6f675d]">
-              Turn ecommerce creative signals into a clear system for studying
-              why attention patterns repeat.
+              OneSource starts with ecommerce creatives as the first proving
+              ground, then turns their signals into reusable intelligence for
+              understanding internet attention patterns.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
@@ -260,10 +261,12 @@ export default function Home() {
 
       <style>{`
         .source-node {
-          border: 1px solid rgb(125 125 125 / 32%);
+          border: 1px solid rgba(127, 184, 200, 0.46);
           border-radius: 16px;
           background: rgba(255, 250, 241, 0.78);
-          box-shadow: 0 14px 34px rgb(255 255 255 / 7%), 0 0 0 10px rgb(252 252 252 / 10%);
+          box-shadow:
+            0 14px 34px rgba(34, 32, 28, 0.07),
+            0 0 0 10px rgba(185, 216, 207, 0.1);
           backdrop-filter: blur(14px);
         }
 
@@ -276,22 +279,22 @@ export default function Home() {
         }
 
         .circuit-path {
-          stroke: rgb(0 0 0 / 2%);
-          stroke-width: 9px;
-          stroke-linecap: square;
+          stroke: rgba(95, 127, 132, 0.3);
+          stroke-width: 1.45;
+          stroke-linecap: round;
           fill: none;
         } 
 
         .circuit-light {
-             stroke: rgb(0 0 0);
-            stroke-width: 1px;
-            stroke-linecap: square;
-            fill: none;
-            opacity: 1%;
-            stroke-dasharray: 126 190;
-            stroke-dashoffset: 190;
-            filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.42));
-            animation: circuit-flow 4900ms cubic-bezier(1, 0.84, 1, 0.71) infinite;
+              stroke: rgb(0 0 0);
+              stroke-width: 2.25;
+              stroke-linecap: round;
+              fill: none;
+              opacity: 0;
+              stroke-dasharray: 82 190;
+              stroke-dashoffset: 190;
+              filter: drop-shadow(0 0 5px rgba(143, 210, 193, 0.42));
+              animation: circuit-flow 10.5s cubic-bezier(0.48, 0, 0.18, 1) infinite;
         }
 
         @keyframes circuit-flow {

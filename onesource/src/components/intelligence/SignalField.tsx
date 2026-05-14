@@ -17,33 +17,33 @@ const NODE_COLORS: Record<SignalType, string> = {
 };
 
 const NODE_TEXT: Record<SignalType, string> = {
-  emotion:  "text-fuchsia-200",
-  hook:     "text-sky-200",
-  visual:   "text-teal-200",
-  platform: "text-zinc-200",
-  niche:    "text-amber-200",
-  pattern:  "text-violet-200",
-  cta:      "text-emerald-200",
+  emotion:  "text-[#5a3555]",
+  hook:     "text-[#2f5360]",
+  visual:   "text-[#335f57]",
+  platform: "text-[#5d554b]",
+  niche:    "text-[#735527]",
+  pattern:  "text-[#51436c]",
+  cta:      "text-[#365d46]",
 };
 
 const NODE_BORDER: Record<SignalType, string> = {
-  emotion:  "border-fuchsia-900/40",
-  hook:     "border-sky-900/40",
-  visual:   "border-teal-900/40",
-  platform: "border-zinc-800",
-  niche:    "border-amber-900/40",
-  pattern:  "border-violet-900/40",
-  cta:      "border-emerald-900/40",
+  emotion:  "border-[#d9bad5]",
+  hook:     "border-[#b9d5df]",
+  visual:   "border-[#bbd8d2]",
+  platform: "border-[#d8cec0]",
+  niche:    "border-[#dec69d]",
+  pattern:  "border-[#cdc3df]",
+  cta:      "border-[#bad4c5]",
 };
 
 const NODE_BG: Record<SignalType, string> = {
-  emotion:  "bg-[#0f0a12]",
-  hook:     "bg-[#0a1014]",
-  visual:   "bg-[#091211]",
-  platform: "bg-[#101010]",
-  niche:    "bg-[#141006]",
-  pattern:  "bg-[#110d18]",
-  cta:      "bg-[#09120d]",
+  emotion:  "bg-[#fffaf1]/72",
+  hook:     "bg-[#fffaf1]/72",
+  visual:   "bg-[#fffaf1]/72",
+  platform: "bg-[#fffaf1]/72",
+  niche:    "bg-[#fffaf1]/72",
+  pattern:  "bg-[#fffaf1]/72",
+  cta:      "bg-[#fffaf1]/72",
 };
 
 // ── Types ─────────────────────────────────────────────────────
@@ -107,14 +107,12 @@ function WeightedNode({
         border rounded-xl
         transition-all duration-200
         hover:opacity-100 hover:-translate-y-[1px]
+        hover:shadow-sm hover:shadow-[#22201c]/8
         ${px}
         ${NODE_BG[type]}
         ${NODE_BORDER[type]}
       `}
     >
-      {/* Top shimmer line */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-white/5" />
-
       {/* Node dot */}
       <div className="relative shrink-0">
         <div className={`rounded-full ${dotSize} ${NODE_COLORS[type]}`} />
@@ -126,21 +124,19 @@ function WeightedNode({
       </div>
 
       {/* Label */}
-      <span className={`${fontSize} ${NODE_TEXT[type]} group-hover:text-white transition-colors`}>
+      <span className={`${fontSize} ${NODE_TEXT[type]} group-hover:text-[#22201c] transition-colors`}>
         {value}
       </span>
 
       {/* Count badge — always visible but faded if not strong */}
       <span
         className={`text-[10px] tabular-nums transition-opacity ${
-          isStrong ? "text-white/25" : "text-white/10 group-hover:opacity-100"
+          isStrong ? "text-[#7c7265]" : "text-[#8a8174]/60 group-hover:opacity-100"
         }`}
       >
         {count}
       </span>
 
-      {/* Subtle grid texture */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] bg-[size:6px_6px]" />
     </button>
   );
 }
@@ -168,7 +164,7 @@ export function SignalField({
   return (
     <div>
       {label && (
-        <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-2">
+        <p className="mb-2 text-[10px] uppercase tracking-wider text-[#7c7265]">
           {label}
         </p>
       )}

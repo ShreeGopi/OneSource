@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 
 import { supabase } from "@/lib/supabase";
@@ -17,6 +17,7 @@ import { Creative } from "@/lib/types/creative";
 
 import { TabNav, TabItem } from "@/components/ui/TabNav";
 import { PatternCard } from "@/components/intelligence/PatternCard";
+import { ScopeIntro } from "@/components/ScopeIntro";
 
 import {
   Signal,
@@ -48,10 +49,10 @@ const PATTERN_EXPLANATIONS: Record<string, string> = {
 // ── Strength styles ───────────────────────────────────────────
 
 const STRENGTH_STYLES: Record<string, string> = {
-  Dominant: "text-green-400",
-  Strong: "text-blue-400",
-  Emerging: "text-yellow-400",
-  Weak: "text-gray-500",
+  Dominant: "text-[#3c6a4a]",
+  Strong: "text-[#4f7475]",
+  Emerging: "text-[#8a6424]",
+  Weak: "text-[#8a8174]",
 };
 
 // ── Tabs ──────────────────────────────────────────────────────
@@ -64,31 +65,71 @@ const TABS: TabItem[] = [
   { id: "library", label: "Library" },
 ];
 
-const TOUR_STEPS = [
+const TOUR_STEPS: {
+  tab: string;
+  focus: "tab" | "section";
+  title: string;
+  body: string;
+}[] = [
   {
     tab: "overview",
+    focus: "tab",
     title: "Overview",
-    body: "Start here to see the strongest signals in the current dataset.",
+    body: "Start with the current dataset summary.",
+  },
+  {
+    tab: "overview",
+    focus: "section",
+    title: "Overview Signals",
+    body: "Use this section to see which signals and patterns show up most often.",
   },
   {
     tab: "patterns",
+    focus: "tab",
     title: "Patterns",
-    body: "Look here for repeated emotion + hook combinations.",
+    body: "Open repeated emotion + hook combinations.",
+  },
+  {
+    tab: "patterns",
+    focus: "section",
+    title: "Pattern Evidence",
+    body: "Study combinations that repeat enough to become useful creative structures.",
   },
   {
     tab: "structures",
+    focus: "tab",
     title: "Structures",
-    body: "Use this to see what reinforces an emotional trigger.",
+    body: "Move from signals into reinforcement.",
+  },
+  {
+    tab: "structures",
+    focus: "section",
+    title: "Reinforcement Map",
+    body: "See what supports an emotional trigger across hooks, visuals, CTAs, and niches.",
   },
   {
     tab: "platforms",
+    focus: "tab",
     title: "Platforms",
-    body: "Compare how patterns behave across channels.",
+    body: "Separate channel context from behavior.",
+  },
+  {
+    tab: "platforms",
+    focus: "section",
+    title: "Platform Context",
+    body: "Compare whether a pattern is broad or concentrated in one environment.",
   },
   {
     tab: "library",
+    focus: "tab",
     title: "Library",
-    body: "Inspect the curated test dataset behind the analysis.",
+    body: "Inspect the records behind the analysis.",
+  },
+  {
+    tab: "library",
+    focus: "section",
+    title: "Source Dataset",
+    body: "Use the library to verify the creative records that power the intelligence layer.",
   },
 ];
 
@@ -163,12 +204,12 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mb-8 rounded-2xl border border-[#27362f] bg-[#141b17] p-5 shadow-sm shadow-black/20">
-      <h2 className="mb-5 text-base font-semibold text-[#f4f0e8]">
+    <div className="mb-8 rounded-2xl border border-[#22201c]/8 bg-[#fffaf1]/76 p-5 shadow-sm shadow-[#22201c]/4">
+      <h2 className="mb-5 text-base font-semibold text-[#22201c]">
         {title}
       </h2>
       {description && (
-        <p className="mb-5 max-w-2xl text-sm leading-6 text-[#87968d]">
+        <p className="mb-5 max-w-2xl text-sm leading-6 text-[#5f574f]">
           {description}
         </p>
       )}
@@ -181,11 +222,26 @@ function Section({
 
 export default function GalleryPage() {
   const [creatives, setCreatives] = useState<Creative[]>([]);
+  const [showScopeIntro, setShowScopeIntro] = useState(true);
+  const tabNavRef = useRef<HTMLDivElement>(null);
+  const tourSectionRef = useRef<HTMLDivElement>(null);
+  const tourCardRef = useRef<HTMLDivElement>(null);
+  const explorationPanelRef = useRef<HTMLDivElement>(null);
 
   const [activeTab, setActiveTab] = useState("overview");
 
   const [showTour, setShowTour] = useState(false);
   const [tourStep, setTourStep] = useState(0);
+  const [tourSeen, setTourSeen] = useState(false);
+  const [isMobileTour, setIsMobileTour] = useState(false);
+  const [tourPosition, setTourPosition] = useState({
+    top: 280,
+    left: 24,
+    anchorX: 24,
+    anchorY: 280,
+    lineEndX: 24,
+    lineEndY: 280,
+  });
 
   const [expandedPattern, setExpandedPattern] =
     useState<string | null>(null);
@@ -343,6 +399,15 @@ export default function GalleryPage() {
 
   // ── Signal exploration ───────────────────────────────────
 
+  function scrollToExplorationPanel() {
+    window.setTimeout(() => {
+      explorationPanelRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
+  }
+
   function handleSignalExplore(signal: Signal) {
     const normalizedSignal =
       normalizeExplorationSignal(signal);
@@ -351,6 +416,7 @@ export default function GalleryPage() {
       activeSignal?.type === normalizedSignal.type &&
       activeSignal.value === normalizedSignal.value
     ) {
+      scrollToExplorationPanel();
       return;
     }
 
@@ -372,6 +438,8 @@ export default function GalleryPage() {
       // Otherwise, append to traversal history
       return [...prev, normalizedSignal];
     });
+
+    scrollToExplorationPanel();
   }
 
   function handleChainJump(index: number) {
@@ -382,6 +450,8 @@ export default function GalleryPage() {
     setExplorationChain((prev) =>
       prev.slice(0, index + 1)
     );
+
+    scrollToExplorationPanel();
   }
 
   function closeExploration() {
@@ -391,6 +461,7 @@ export default function GalleryPage() {
 
   function startTour() {
     setShowTour(true);
+    setTourSeen(false);
     setTourStep(0);
     setActiveTab(TOUR_STEPS[0].tab);
   }
@@ -398,6 +469,11 @@ export default function GalleryPage() {
   function goToTourStep(index: number) {
     setTourStep(index);
     setActiveTab(TOUR_STEPS[index].tab);
+  }
+
+  function closeTour() {
+    setShowTour(false);
+    setTourSeen(true);
   }
 
   // ── Build exploration graph ──────────────────────────────
@@ -435,30 +511,154 @@ export default function GalleryPage() {
   });
 
   const activeTourStep = TOUR_STEPS[tourStep];
+
+  const getTourTarget = useCallback(() => {
+    return activeTourStep.focus === "tab"
+      ? tabNavRef.current?.querySelector<HTMLElement>(
+          `[data-tab-id="${activeTourStep.tab}"]`
+        )
+      : tourSectionRef.current;
+  }, [activeTourStep.focus, activeTourStep.tab]);
+
+  useEffect(() => {
+    function updateMobileTour() {
+      setIsMobileTour(window.innerWidth < 640);
+    }
+
+    updateMobileTour();
+    window.addEventListener("resize", updateMobileTour);
+
+    return () => {
+      window.removeEventListener("resize", updateMobileTour);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!showTour) return;
+
+    function updateTourPosition() {
+      const target = getTourTarget();
+
+      if (!target) return;
+
+      const rect = target.getBoundingClientRect();
+      const cardWidth = Math.min(window.innerWidth - 32, 360);
+      const cardHeight =
+        tourCardRef.current?.getBoundingClientRect().height ?? 310;
+      const gap = 22;
+      const anchorX =
+        activeTourStep.focus === "tab"
+          ? rect.left + rect.width / 2
+          : rect.right - 48;
+      const anchorY =
+        activeTourStep.focus === "tab" ? rect.bottom - 2 : rect.top + 2;
+      const sectionLeft = rect.right - cardWidth - 28;
+      const preferredLeft =
+        activeTourStep.focus === "tab"
+          ? anchorX - cardWidth / 2
+          : sectionLeft;
+      const left = Math.max(
+        16,
+        Math.min(preferredLeft, window.innerWidth - cardWidth - 16)
+      );
+      const preferredTop =
+        activeTourStep.focus === "tab"
+          ? anchorY + gap
+          : rect.top + 12;
+      const fallbackTop =
+        activeTourStep.focus === "tab" ? anchorY - cardHeight - gap : rect.bottom + gap;
+      const top =
+        preferredTop >= 16 && preferredTop + cardHeight <= window.innerHeight - 16
+          ? preferredTop
+          : Math.max(16, Math.min(fallbackTop, window.innerHeight - cardHeight - 16));
+      const cardIsBelow = top > anchorY;
+      const lineEndX = Math.max(left + 28, Math.min(anchorX, left + cardWidth - 28));
+      const lineEndY = cardIsBelow ? top : top + cardHeight;
+
+      setTourPosition({
+        top,
+        left,
+        anchorX,
+        anchorY,
+        lineEndX,
+        lineEndY,
+      });
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      const target = getTourTarget();
+
+      target?.scrollIntoView({
+        behavior: "smooth",
+        block: isMobileTour ? "center" : "nearest",
+        inline: "center",
+      });
+
+      if (!isMobileTour) {
+        window.requestAnimationFrame(updateTourPosition);
+      }
+    });
+
+    if (isMobileTour) {
+      return () => {
+        window.cancelAnimationFrame(frame);
+      };
+    }
+
+    window.addEventListener("resize", updateTourPosition);
+    window.addEventListener("scroll", updateTourPosition, true);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", updateTourPosition);
+      window.removeEventListener("scroll", updateTourPosition, true);
+    };
+  }, [activeTourStep, getTourTarget, isMobileTour, showTour]);
   
   // ── Render ────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#0f1411] text-[#f4f0e8]">
-      <div className="max-w-4xl mx-auto px-6 py-10">
+    <div className="min-h-screen bg-[#f5f1e8] text-[#22201c]">
+      {showScopeIntro ? (
+        <ScopeIntro
+          eyebrow="Current workspace"
+          title="You are entering the ecommerce creative workspace."
+          body="OneSource can study attention broadly. Right now, this workspace focuses on ecommerce because the signals are clear enough to compare."
+          detail="You will explore hooks, emotions, visuals, CTAs, platforms, and niches from the current dataset."
+          onPrimaryClick={() => setShowScopeIntro(false)}
+          primaryLabel="Open intelligence workspace"
+        />
+      ) : (
+        <div
+          id="intelligence-workspace"
+          className="mx-auto min-h-screen max-w-5xl px-6 py-10"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(34,32,28,0.032) 1px, transparent 1px), linear-gradient(90deg, rgba(34,32,28,0.032) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
+        >
 
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[#f4f0e8]">
+        <div className="mb-6">
+          <p className="mb-2 text-[10px] uppercase tracking-[0.22em] text-[#7c7265]">
+            Attention Workspace
+          </p>
+          <h1 className="text-2xl font-bold text-[#22201c]">
             Intelligence
           </h1>
-          <p className="mt-1 text-sm text-[#7d8f84]">
-            {filtered.length} creatives · attention pattern analysis
+          <p className="mt-1 text-sm text-[#5f574f]">
+            {filtered.length} creatives - attention pattern analysis
           </p>
         </div>
 
-        <div className="mb-8 rounded-xl border border-[#27362f] bg-[#141b17] p-4 shadow-sm shadow-black/20">
+        <div className="mb-6 rounded-xl border border-[#22201c]/8 bg-[#fffaf1]/76 p-4 shadow-sm shadow-[#22201c]/4">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-sm font-semibold text-[#f4f0e8]">
+              <p className="text-sm font-semibold text-[#22201c]">
                 Intelligence workspace
               </p>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#87968d]">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#5f574f]">
                 Explore attention signals, repeated patterns, reinforced
                 structures, platform behavior, and the creative library behind
                 this analysis.
@@ -467,57 +667,126 @@ export default function GalleryPage() {
             <button
               type="button"
               onClick={startTour}
-              className="w-fit rounded-lg border border-[#33463d] bg-[#19231e] px-3 py-2 text-xs font-semibold text-[#d9e4dc] transition hover:border-[#5f7c6c] hover:text-white"
+              disabled={showTour}
+              className={`w-fit rounded-lg border px-3 py-2 text-xs font-semibold transition ${
+                showTour
+                  ? "cursor-default border-[#22201c]/10 bg-[#e9e1d4] text-[#7c7265]"
+                  : "border-[#22201c]/20 bg-[#22201c] text-[#fffaf1] hover:-translate-y-px hover:bg-[#3a352d] hover:shadow-md hover:shadow-[#22201c]/10"
+              }`}
             >
-              Start quick tour
+              {showTour ? "Tour running" : tourSeen ? "Restart tour" : "Start quick tour"}
             </button>
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <TabNav
-          tabs={tabsWithCounts}
-          active={activeTab}
-          onChange={setActiveTab}
-        />
+        <div ref={tabNavRef}>
+          <TabNav
+            tabs={tabsWithCounts}
+            active={activeTab}
+            onChange={setActiveTab}
+          />
+        </div>
 
-        <div className="mb-6 rounded-xl border border-[#24352d] bg-[#121914] px-4 py-3">
-          <p className="text-sm leading-6 text-[#b9c7bd]">
-            <span className="font-semibold text-[#c8e6d4]">
+        <div
+          ref={tourSectionRef}
+          className="mb-5 rounded-xl border border-[#22201c]/8 bg-[#fffaf1]/76 px-4 py-3 shadow-sm shadow-[#22201c]/4"
+        >
+          <p className="text-sm leading-6 text-[#2f2a24]">
+            <span className="font-semibold text-[#22201c]">
               {TAB_HELP[activeTab].title}:
             </span>{" "}
             {TAB_HELP[activeTab].body}
           </p>
-          <p className="mt-1 text-xs leading-5 text-[#74867c]">
+          <p className="mt-1 text-xs leading-5 text-[#5f574f]">
             {TAB_HELP[activeTab].benefit}
           </p>
         </div>
 
         {showTour && (
           <div className="pointer-events-none fixed inset-0 z-50">
-            <div className="pointer-events-auto absolute bottom-5 left-5 w-[calc(100%-2.5rem)] max-w-sm rounded-2xl border border-[#3a5146] bg-[#f2eadf] p-5 text-[#17211b] shadow-2xl shadow-black/40">
-              <div className="absolute -top-8 left-8 h-8 w-px bg-[#9fb7a8]" />
-              <div className="absolute -top-10 left-[27px] h-3 w-3 rotate-45 border-l border-t border-[#9fb7a8]" />
-              <div className="mb-5 flex items-start justify-between gap-4">
+            {!isMobileTour && (
+            <svg className="fixed inset-0 h-full w-full" aria-hidden="true">
+              <line
+                x1={tourPosition.anchorX}
+                y1={tourPosition.anchorY}
+                x2={tourPosition.lineEndX}
+                y2={tourPosition.lineEndY}
+                stroke="#22201c"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <circle
+                cx={tourPosition.anchorX}
+                cy={tourPosition.anchorY}
+                r="7"
+                fill="#22201c"
+                opacity="0.16"
+              >
+                <animate
+                  attributeName="r"
+                  values="6;11;6"
+                  dur="1.6s"
+                  repeatCount="indefinite"
+                />
+                <animate
+                  attributeName="opacity"
+                  values="0.2;0.04;0.2"
+                  dur="1.6s"
+                  repeatCount="indefinite"
+                />
+              </circle>
+              <circle
+                cx={tourPosition.anchorX}
+                cy={tourPosition.anchorY}
+                r="4"
+                fill="#22201c"
+              />
+              <circle
+                cx={tourPosition.lineEndX}
+                cy={tourPosition.lineEndY}
+                r="4"
+                fill="#22201c"
+              />
+            </svg>
+            )}
+            <div
+              ref={tourCardRef}
+              className={`pointer-events-auto fixed rounded-2xl border border-[#22201c]/12 bg-[#fffaf1] p-4 text-[#22201c] shadow-xl shadow-[#22201c]/12 ${
+                isMobileTour
+                  ? "inset-x-3 bottom-3"
+                  : "w-[calc(100%-2rem)] max-w-[360px]"
+              }`}
+              style={
+                isMobileTour
+                  ? undefined
+                  : {
+                      top: tourPosition.top,
+                      left: tourPosition.left,
+                    }
+              }
+            >
+              <div className="mb-4 flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-[#6f8175]">
+                  <p className="text-xs uppercase tracking-[0.18em] text-[#7c7265]">
                     Quick tour {tourStep + 1} of {TOUR_STEPS.length}
                   </p>
-                  <h2 className="mt-3 text-lg font-semibold text-[#17211b]">
+                  <h2 className="mt-3 text-lg font-semibold text-[#22201c]">
                     {activeTourStep.title}
                   </h2>
-                  <p className="mt-3 text-sm leading-6 text-[#4c5f54]">
+                  <p className="mt-3 text-sm leading-6 text-[#465a50]">
                     {activeTourStep.body}
                   </p>
-                  <p className="mt-3 text-xs leading-5 text-[#6f8175]">
-                    The matching tab is active behind this card, so you can
-                    inspect the section while moving through the tour.
+                  <p className="mt-3 text-xs leading-5 text-[#5f574f] sm:block">
+                    {activeTourStep.focus === "tab"
+                      ? "This points to the tab you are entering."
+                      : "This points to the section that explains how to use it."}
                   </p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setShowTour(false)}
-                  className="text-xs font-semibold text-[#6f8175] transition hover:text-[#17211b]"
+                  onClick={closeTour}
+                  className="text-xs font-semibold text-[#7c7265] transition hover:text-[#22201c]"
                 >
                   Close
                 </button>
@@ -526,11 +795,11 @@ export default function GalleryPage() {
               <div className="mb-5 flex gap-1.5">
                 {TOUR_STEPS.map((step, index) => (
                   <button
-                    key={step.tab}
+                    key={`${step.tab}-${step.focus}-${index}`}
                     type="button"
                     onClick={() => goToTourStep(index)}
                     className={`h-1.5 flex-1 rounded-full transition ${
-                      index === tourStep ? "bg-[#17211b]" : "bg-[#d9cfc0]"
+                      index === tourStep ? "bg-[#22201c]" : "bg-[#e1d9cd]"
                     }`}
                     aria-label={`Go to ${step.title}`}
                   />
@@ -542,7 +811,7 @@ export default function GalleryPage() {
                   type="button"
                   onClick={() => goToTourStep(tourStep - 1)}
                   disabled={tourStep === 0}
-                  className="rounded-lg border border-[#d5c8b8] px-3 py-2 text-xs font-semibold text-[#53665b] transition hover:border-[#9fb7a8] hover:text-[#17211b] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="rounded-lg border border-[#22201c]/15 px-3 py-2 text-xs font-semibold text-[#5f574f] transition hover:border-[#7f9f94] hover:text-[#22201c] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Back
                 </button>
@@ -551,25 +820,25 @@ export default function GalleryPage() {
                     <button
                       type="button"
                       onClick={() => goToTourStep(tourStep + 1)}
-                      className="rounded-lg bg-[#17211b] px-4 py-2 text-xs font-semibold text-[#f2eadf] transition hover:bg-[#29382f]"
+                      className="rounded-lg bg-[#22201c] px-4 py-2 text-xs font-semibold text-[#fffaf1] transition hover:bg-[#3a352d]"
                     >
                       Next
                     </button>
                   ) : (
                     <button
                       type="button"
-                      onClick={() => setShowTour(false)}
-                      className="rounded-lg bg-[#17211b] px-4 py-2 text-xs font-semibold text-[#f2eadf] transition hover:bg-[#29382f]"
+                      onClick={closeTour}
+                      className="rounded-lg bg-[#22201c] px-4 py-2 text-xs font-semibold text-[#fffaf1] transition hover:bg-[#3a352d]"
                     >
                       Finish
                     </button>
                   )}
                   <button
                     type="button"
-                    onClick={() => setShowTour(false)}
-                    className="rounded-lg border border-[#d5c8b8] px-3 py-2 text-xs font-semibold text-[#53665b] transition hover:border-[#9fb7a8] hover:text-[#17211b]"
+                    onClick={closeTour}
+                    className="rounded-lg border border-[#22201c]/15 px-3 py-2 text-xs font-semibold text-[#5f574f] transition hover:border-[#7f9f94] hover:text-[#22201c]"
                   >
-                    Skip
+                    Close
                   </button>
                 </div>
               </div>
@@ -580,14 +849,14 @@ export default function GalleryPage() {
         {/* ── TAB: OVERVIEW ──────────────────────────────── */}
 
         {activeTab === "overview" && (
-          <div className="space-y-6">
-            <div className="rounded-xl border border-[#27362f] bg-[#141b17] p-4 shadow-sm shadow-black/20">
+          <div className="space-y-5">
+            <div className="rounded-xl border border-[#22201c]/8 bg-[#fffaf1]/76 p-4 shadow-sm shadow-[#22201c]/4">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-[#f4f0e8]">
+                  <p className="text-sm font-semibold text-[#22201c]">
                     Test dataset
                   </p>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-[#87968d]">
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-[#5f574f]">
                     This view is currently using a curated test dataset. It does
                     not represent a live production dataset, but it is structured
                     like real ecommerce creative data to verify how OneSource
@@ -597,7 +866,7 @@ export default function GalleryPage() {
                 <button
                   type="button"
                   onClick={() => setActiveTab("library")}
-                  className="w-fit rounded-lg border border-[#33463d] bg-[#19231e] px-3 py-2 text-xs font-semibold text-[#d9e4dc] transition hover:border-[#5f7c6c] hover:text-white"
+                  className="w-fit rounded-lg border border-[#22201c]/20 bg-[#22201c] px-3 py-2 text-xs font-semibold text-[#fffaf1] transition hover:-translate-y-px hover:bg-[#3a352d] hover:shadow-md hover:shadow-[#22201c]/10"
                 >
                   View dataset
                 </button>
@@ -605,7 +874,7 @@ export default function GalleryPage() {
             </div>
 
             {/* Summary stats */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               {[
                 { label: "Top Emotion", value: topEmotion?.[0], count: topEmotion?.[1] },
                 { label: "Top Hook", value: topHook?.[0], count: topHook?.[1] },
@@ -613,9 +882,9 @@ export default function GalleryPage() {
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className="rounded-xl border border-[#27362f] bg-[#141b17] p-4 shadow-sm shadow-black/20"
+                  className="rounded-xl border border-[#22201c]/8 bg-[#fffaf1]/76 p-4 shadow-sm shadow-[#22201c]/4"
                 >
-                  <p className="mb-1 text-xs text-[#7d8f84]">{stat.label}</p>
+                  <p className="mb-1 text-xs text-[#7c7265]">{stat.label}</p>
                  <div className="mt-1">
                     {stat.value ? (
                       <SignalTag
@@ -631,11 +900,11 @@ export default function GalleryPage() {
                         size="md"
                       />
                     ) : (
-                      <p className="text-sm text-[#5f7166]">—</p>
+                      <p className="text-sm text-[#8a8174]">—</p>
                     )}
                   </div>
                   {stat.count !== undefined && (
-                    <p className="mt-0.5 text-xs text-[#6f8175]">
+                    <p className="mt-0.5 text-xs text-[#7c7265]">
                       {stat.count} creatives
                     </p>
                   )}
@@ -655,7 +924,7 @@ export default function GalleryPage() {
                   return (
                     <div
                       key={pattern}
-                      className="flex items-center justify-between border-b border-[#27362f] py-2 last:border-0"
+                      className="flex items-center justify-between border-b border-[#22201c]/10 py-2 last:border-0"
                     >
                      <div className="flex items-center gap-2 text-sm flex-wrap">
                         <SignalTag
@@ -664,7 +933,7 @@ export default function GalleryPage() {
                           onClick={handleSignalExplore}
                         />
 
-                        <span className="text-gray-600">→</span>
+                        <span className="text-[#8a8174]">→</span>
 
                         <SignalTag
                           value={hook}
@@ -674,11 +943,11 @@ export default function GalleryPage() {
                       </div>
                       <div className="flex items-center gap-3">
                         <span
-                          className={`text-xs ${STRENGTH_STYLES[strength] ?? "text-gray-500"}`}
+                          className={`text-xs ${STRENGTH_STYLES[strength] ?? "text-[#8a8174]"}`}
                         >
                           {strength}
                         </span>
-                        <span className="text-xs text-[#6f8175]">
+                        <span className="text-xs text-[#7c7265]">
                           {count}×
                         </span>
                       </div>
@@ -689,7 +958,7 @@ export default function GalleryPage() {
               {topPatterns.length > 5 && (
                 <button
                   onClick={() => setActiveTab("patterns")}
-                  className="mt-4 text-xs text-[#7d8f84] transition hover:text-[#f4f0e8]"
+                  className="mt-4 text-xs text-[#7c7265] transition hover:text-[#22201c]"
                 >
                   View all {topPatterns.length} patterns →
                 </button>
@@ -700,7 +969,7 @@ export default function GalleryPage() {
             {filteredReinforcedStructures.slice(0, 2).map((structure) => (
               <div
                 key={structure.emotion}
-                className="rounded-xl border border-[#27362f] bg-[#141b17] p-4 shadow-sm shadow-black/20"
+                className="rounded-xl border border-[#22201c]/8 bg-[#fffaf1]/76 p-4 shadow-sm shadow-[#22201c]/4"
               >
                 <div className="flex items-center justify-between mb-3">
                 <SignalTag
@@ -709,7 +978,7 @@ export default function GalleryPage() {
                     onClick={handleSignalExplore}
                     size="md"
                 />
-                  <p className="text-xs text-[#6f8175]">
+                  <p className="text-xs text-[#7c7265]">
                     strength {structure.totalStrength}
                   </p>
                 </div>
@@ -728,7 +997,7 @@ export default function GalleryPage() {
             {filteredReinforcedStructures.length > 2 && (
               <button
                 onClick={() => setActiveTab("structures")}
-                className="text-xs text-gray-500 hover:text-white transition"
+                className="text-xs text-[#7c7265] transition hover:text-[#22201c]"
               >
                 View all structures →
               </button>
@@ -741,7 +1010,7 @@ export default function GalleryPage() {
         {activeTab === "patterns" && (
           <div className="space-y-3">
             {topPatterns.length === 0 && (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-[#7c7265]">
                 No repeating patterns detected yet.
               </p>
             )}
@@ -767,12 +1036,12 @@ export default function GalleryPage() {
           <div className="space-y-6">
             {/* Reinforced Structures */}
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-base font-semibold text-[#f4f0e8]">
+              <h2 className="text-base font-semibold text-[#22201c]">
                 Reinforced Structures
               </h2>
               <button
                 onClick={() => setShowAllStructures(!showAllStructures)}
-                className="rounded-lg bg-[#19231e] px-3 py-1 text-xs text-[#9fb0a6] transition hover:text-[#f4f0e8]"
+                className="rounded-lg border border-[#22201c]/8 bg-[#fffaf1]/76 px-3 py-1 text-xs text-[#5f574f] transition hover:border-[#22201c]/25 hover:text-[#22201c]"
               >
                 {showAllStructures ? "Strong only" : "Show all"}
               </button>
@@ -782,7 +1051,7 @@ export default function GalleryPage() {
               {visibleStructures.map((structure) => (
                 <div
                   key={structure.emotion}
-                  className="rounded-xl border border-[#27362f] bg-[#141b17] p-4 shadow-sm shadow-black/20"
+                  className="rounded-xl border border-[#22201c]/8 bg-[#fffaf1]/76 p-4 shadow-sm shadow-[#22201c]/4"
                 >
                   <div className="flex items-center justify-between mb-4">
                   <SignalTag
@@ -791,14 +1060,14 @@ export default function GalleryPage() {
                       onClick={handleSignalExplore}
                       size="md"
                   />
-                    <p className="text-xs text-[#6f8175]">
+                    <p className="text-xs text-[#7c7265]">
                       strength {structure.totalStrength}
                     </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="mb-2 text-xs uppercase tracking-wider text-[#7d8f84]">
+                      <p className="mb-2 text-xs uppercase tracking-wider text-[#7c7265]">
                         Hooks
                       </p>
                       {getTopEntries(structure.hooks, 4).map(([hook, count]) => (
@@ -811,12 +1080,12 @@ export default function GalleryPage() {
                             type="hook"
                             onClick={handleSignalExplore}
                           />
-                          <span className="text-xs text-[#6f8175]">{count}</span>
+                          <span className="text-xs text-[#7c7265]">{count}</span>
                         </div>
                       ))}
                     </div>
                     <div>
-                      <p className="mb-2 text-xs uppercase tracking-wider text-[#7d8f84]">
+                      <p className="mb-2 text-xs uppercase tracking-wider text-[#7c7265]">
                         Visuals
                       </p>
                       {getTopEntries(structure.visuals, 4).map(([visual, count]) => (
@@ -824,8 +1093,8 @@ export default function GalleryPage() {
                           key={visual}
                           className="flex items-center justify-between py-1"
                         >
-                          <span className="text-xs text-[#cfd8d1]">{visual}</span>
-                          <span className="text-xs text-[#6f8175]">{count}</span>
+                          <span className="text-xs text-[#3a352d]">{visual}</span>
+                          <span className="text-xs text-[#7c7265]">{count}</span>
                         </div>
                       ))}
                     </div>
@@ -836,12 +1105,12 @@ export default function GalleryPage() {
 
             {/* Relationships */}
             <div className="mt-8">
-              <h2 className="mb-5 text-base font-semibold text-[#f4f0e8]">
+              <h2 className="mb-5 text-base font-semibold text-[#22201c]">
                 Relationship Intelligence
               </h2>
               {Object.entries(groupedRelationships).map(([type, items]) => (
                 <div key={type} className="mb-6">
-                  <p className="mb-3 text-xs uppercase tracking-wider text-[#7d8f84]">
+                  <p className="mb-3 text-xs uppercase tracking-wider text-[#7c7265]">
                     {type}
                   </p>
                   <div className="space-y-2">
@@ -850,7 +1119,7 @@ export default function GalleryPage() {
                       return (
                         <div
                           key={`${item.left}-${item.right}`}
-                          className="flex items-center justify-between border-b border-[#27362f] py-2 last:border-0"
+                          className="flex items-center justify-between border-b border-[#22201c]/10 py-2 last:border-0"
                         >
                          <div className="flex items-center gap-2 flex-wrap">
                             <SignalTag
@@ -859,7 +1128,7 @@ export default function GalleryPage() {
                               onClick={handleSignalExplore}
                             />
 
-                            <span className="text-gray-600 text-xs">↔</span>
+                            <span className="text-xs text-[#8a8174]">↔</span>
 
                             <SignalTag
                               value={item.right}
@@ -869,11 +1138,11 @@ export default function GalleryPage() {
                           </div>
                           <div className="flex items-center gap-3">
                             <span
-                              className={`text-xs ${STRENGTH_STYLES[strength] ?? "text-gray-500"}`}
+                              className={`text-xs ${STRENGTH_STYLES[strength] ?? "text-[#8a8174]"}`}
                             >
                               {strength}
                             </span>
-                            <span className="text-xs text-[#6f8175]">
+                            <span className="text-xs text-[#7c7265]">
                               {item.count}×
                             </span>
                           </div>
@@ -900,7 +1169,7 @@ export default function GalleryPage() {
                 {topPlatformPatterns.map((item) => (
                   <div
                     key={item.platform}
-                    className="rounded-xl border border-[#27362f] bg-[#101612] p-4"
+                    className="rounded-xl border border-[#22201c]/8 bg-[#fffaf1]/76 p-4 shadow-sm shadow-[#22201c]/4"
                   >
                    <div className="mb-2">
                       <SignalTag
@@ -910,16 +1179,16 @@ export default function GalleryPage() {
                         size="md"
                       />
                     </div>
-                    <p className="truncate text-xs text-[#9fb0a6]">
+                    <p className="truncate text-xs text-[#5f574f]">
                       {item.top ? item.top[0] : "No dominant pattern"}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
                       <span
-                        className={`text-xs ${STRENGTH_STYLES[item.label] ?? "text-gray-500"}`}
+                        className={`text-xs ${STRENGTH_STYLES[item.label] ?? "text-[#8a8174]"}`}
                       >
                         {item.label}
                       </span>
-                      <span className="text-xs text-[#6f8175]">
+                      <span className="text-xs text-[#7c7265]">
                         {item.percentage}%
                       </span>
                     </div>
@@ -936,7 +1205,7 @@ export default function GalleryPage() {
               <div className="space-y-6">
                 {crossPlatformData.slice(0, 4).map((group) => (
                   <div key={group.pattern}>
-                    <p className="mb-3 text-xs font-semibold text-[#f4f0e8]">
+                    <p className="mb-3 text-xs font-semibold text-[#22201c]">
                       {group.pattern}
                     </p>
                     <div className="space-y-2">
@@ -945,16 +1214,16 @@ export default function GalleryPage() {
                           key={entry.platform}
                           className="flex items-center justify-between"
                         >
-                          <span className="w-24 text-xs capitalize text-[#9fb0a6]">
+                          <span className="w-24 text-xs capitalize text-[#5f574f]">
                             {entry.platform}
                           </span>
-                          <div className="mx-3 h-1 flex-1 overflow-hidden rounded-full bg-[#24352d]">
+                          <div className="mx-3 h-1 flex-1 overflow-hidden rounded-full bg-[#e1d9cd]">
                             <div
-                              className="h-full rounded-full bg-[#9fb7a8]"
+                              className="h-full rounded-full bg-[#7f9f94]"
                               style={{ width: `${entry.percentage}%` }}
                             />
                           </div>
-                          <span className="w-8 text-right text-xs text-[#6f8175]">
+                          <span className="w-8 text-right text-xs text-[#7c7265]">
                             {entry.percentage}%
                           </span>
                         </div>
@@ -971,17 +1240,17 @@ export default function GalleryPage() {
                 {taxonomy.map(([cluster, data]) => (
                   <div
                     key={cluster}
-                    className="rounded-xl border border-[#27362f] bg-[#101612] p-3"
+                    className="rounded-xl border border-[#22201c]/8 bg-[#fffaf1]/76 p-3 shadow-sm shadow-[#22201c]/4"
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-xs font-semibold text-[#f4f0e8]">
+                      <p className="text-xs font-semibold text-[#22201c]">
                         {cluster}
                       </p>
-                      <span className="text-xs text-[#6f8175]">
+                      <span className="text-xs text-[#7c7265]">
                         {data.count}
                       </span>
                     </div>
-                    <p className="text-xs text-[#87968d]">
+                    <p className="text-xs text-[#5f574f]">
                       {data.patterns.join(" · ")}
                     </p>
                   </div>
@@ -999,7 +1268,7 @@ export default function GalleryPage() {
             <div className="flex gap-3 mb-6 flex-wrap">
               <select
                 onChange={(e) => setSelectedEmotion(e.target.value)}
-                className="rounded-lg border border-[#27362f] bg-[#141b17] px-3 py-2 text-sm text-[#d9e4dc] focus:border-[#5f7c6c] focus:outline-none"
+                className="rounded-lg border border-[#22201c]/12 bg-[#fffaf1]/78 px-3 py-2 text-sm text-[#3a352d] focus:border-[#7f9f94] focus:outline-none"
               >
                 <option value="">All Emotions</option>
                 {allEmotions.map((e) => (
@@ -1009,7 +1278,7 @@ export default function GalleryPage() {
 
               <select
                 onChange={(e) => setSelectedHook(e.target.value)}
-                className="rounded-lg border border-[#27362f] bg-[#141b17] px-3 py-2 text-sm text-[#d9e4dc] focus:border-[#5f7c6c] focus:outline-none"
+                className="rounded-lg border border-[#22201c]/12 bg-[#fffaf1]/78 px-3 py-2 text-sm text-[#3a352d] focus:border-[#7f9f94] focus:outline-none"
               >
                 <option value="">All Hooks</option>
                 {allHooks.map((h) => (
@@ -1019,7 +1288,7 @@ export default function GalleryPage() {
 
               <select
                 onChange={(e) => setSelectedPlatform(e.target.value)}
-                className="rounded-lg border border-[#27362f] bg-[#141b17] px-3 py-2 text-sm text-[#d9e4dc] focus:border-[#5f7c6c] focus:outline-none"
+                className="rounded-lg border border-[#22201c]/12 bg-[#fffaf1]/78 px-3 py-2 text-sm text-[#3a352d] focus:border-[#7f9f94] focus:outline-none"
               >
                 <option value="">All Platforms</option>
                 {allPlatforms.map((p) => (
@@ -1034,7 +1303,7 @@ export default function GalleryPage() {
                     setSelectedHook("");
                     setSelectedPlatform("");
                   }}
-                  className="px-3 py-2 text-xs text-[#7d8f84] transition hover:text-[#f4f0e8]"
+                  className="px-3 py-2 text-xs text-[#7c7265] transition hover:text-[#22201c]"
                 >
                   Clear filters
                 </button>
@@ -1043,13 +1312,13 @@ export default function GalleryPage() {
 
             {/* Grid */}
             {filtered.length === 0 ? (
-              <p className="text-sm text-[#87968d]">No creatives match these filters.</p>
+              <p className="text-sm text-[#5f574f]">No creatives match these filters.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {filtered.map((item) => (
                   <div
                     key={item.id}
-                    className="rounded-xl border border-[#27362f] bg-[#141b17] p-4 transition hover:border-[#5f7c6c]"
+                    className="rounded-xl border border-[#22201c]/8 bg-[#fffaf1]/76 p-4 shadow-sm shadow-[#22201c]/4 transition hover:border-[#7f9f94]"
                   >
                     {item.image_url && (
                       <Image
@@ -1061,15 +1330,15 @@ export default function GalleryPage() {
                       />
                     )}
 
-                    <h2 className="text-sm font-semibold text-[#f4f0e8]">
+                    <h2 className="text-sm font-semibold text-[#22201c]">
                       {item.title}
                     </h2>
-                    <p className="mt-0.5 text-xs text-[#87968d]">{item.brand}</p>
+                    <p className="mt-0.5 text-xs text-[#5f574f]">{item.brand}</p>
 
                  <div className="mt-4 space-y-3">
 
                   <div>
-                    <p className="mb-1 text-[10px] uppercase tracking-wider text-[#6f8175]">
+                    <p className="mb-1 text-[10px] uppercase tracking-wider text-[#7c7265]">
                       Emotions
                     </p>
 
@@ -1081,7 +1350,7 @@ export default function GalleryPage() {
                   </div>
 
                   <div>
-                    <p className="mb-1 text-[10px] uppercase tracking-wider text-[#6f8175]">
+                    <p className="mb-1 text-[10px] uppercase tracking-wider text-[#7c7265]">
                       Hooks
                     </p>
 
@@ -1093,7 +1362,7 @@ export default function GalleryPage() {
                   </div>
 
                   <div>
-                    <p className="mb-1 text-[10px] uppercase tracking-wider text-[#6f8175]">
+                    <p className="mb-1 text-[10px] uppercase tracking-wider text-[#7c7265]">
                       Visuals
                     </p>
 
@@ -1105,7 +1374,7 @@ export default function GalleryPage() {
                   </div>
                 </div>
 
-                    <p className="mt-3 text-xs capitalize text-[#5f7166]">
+                    <p className="mt-3 text-xs capitalize text-[#7c7265]">
                       {item.platform} · {item.niche}
                     </p>
                   </div>
@@ -1117,16 +1386,19 @@ export default function GalleryPage() {
 {/* ── Persistent Exploration Panel ───────────────────── */}
 
           {activeSignal && (
-            <ExplorationPanel
-              chain={explorationChain}
-              activeSignal={activeSignal}
-              data={explorationData}
-              onSignalClick={handleSignalExplore}
-              onChainJump={handleChainJump}
-              onClose={closeExploration}
-            />
+            <div ref={explorationPanelRef}>
+              <ExplorationPanel
+                chain={explorationChain}
+                activeSignal={activeSignal}
+                data={explorationData}
+                onSignalClick={handleSignalExplore}
+                onChainJump={handleChainJump}
+                onClose={closeExploration}
+              />
+            </div>
           )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

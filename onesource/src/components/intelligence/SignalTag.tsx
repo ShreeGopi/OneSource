@@ -28,66 +28,66 @@ const NODE_STYLES: Record<
   }
 > = {
   emotion: {
-    accent: "bg-fuchsia-400",
-    border: "border-fuchsia-900/40",
-    glow: "hover:shadow-[0_0_20px_rgba(217,70,239,0.08)]",
-    text: "text-fuchsia-100",
-    bg: "bg-[#0f0a12]",
-    activeBg: "bg-[#1b1020]",
+    accent: "bg-[#c56fba]",
+    border: "border-[#d9bad5]",
+    glow: "hover:shadow-[0_10px_24px_rgba(34,32,28,0.08)]",
+    text: "text-[#5a3555]",
+    bg: "bg-[#fffaf1]/72",
+    activeBg: "bg-[#f4e3f1]",
   },
 
   hook: {
-    accent: "bg-sky-400",
-    border: "border-sky-900/40",
-    glow: "hover:shadow-[0_0_20px_rgba(14,165,233,0.08)]",
-    text: "text-sky-100",
-    bg: "bg-[#0a1014]",
-    activeBg: "bg-[#0f1c24]",
+    accent: "bg-[#4f9bb8]",
+    border: "border-[#b9d5df]",
+    glow: "hover:shadow-[0_10px_24px_rgba(34,32,28,0.08)]",
+    text: "text-[#2f5360]",
+    bg: "bg-[#fffaf1]/72",
+    activeBg: "bg-[#e7f1f4]",
   },
 
   visual: {
-    accent: "bg-teal-400",
-    border: "border-teal-900/40",
-    glow: "hover:shadow-[0_0_20px_rgba(20,184,166,0.08)]",
-    text: "text-teal-100",
-    bg: "bg-[#091211]",
-    activeBg: "bg-[#10201d]",
+    accent: "bg-[#4fa99a]",
+    border: "border-[#bbd8d2]",
+    glow: "hover:shadow-[0_10px_24px_rgba(34,32,28,0.08)]",
+    text: "text-[#335f57]",
+    bg: "bg-[#fffaf1]/72",
+    activeBg: "bg-[#e6f0ed]",
   },
 
   platform: {
-    accent: "bg-zinc-400",
-    border: "border-zinc-800",
-    glow: "hover:shadow-[0_0_20px_rgba(161,161,170,0.06)]",
-    text: "text-zinc-100",
-    bg: "bg-[#101010]",
-    activeBg: "bg-[#181818]",
+    accent: "bg-[#8a8174]",
+    border: "border-[#d8cec0]",
+    glow: "hover:shadow-[0_10px_24px_rgba(34,32,28,0.08)]",
+    text: "text-[#5d554b]",
+    bg: "bg-[#fffaf1]/72",
+    activeBg: "bg-[#eee7dc]",
   },
 
   niche: {
-    accent: "bg-amber-400",
-    border: "border-amber-900/40",
-    glow: "hover:shadow-[0_0_20px_rgba(245,158,11,0.08)]",
-    text: "text-amber-100",
-    bg: "bg-[#141006]",
-    activeBg: "bg-[#221907]",
+    accent: "bg-[#c58d3f]",
+    border: "border-[#dec69d]",
+    glow: "hover:shadow-[0_10px_24px_rgba(34,32,28,0.08)]",
+    text: "text-[#735527]",
+    bg: "bg-[#fffaf1]/72",
+    activeBg: "bg-[#f3e8d0]",
   },
 
   pattern: {
-    accent: "bg-violet-400",
-    border: "border-violet-900/40",
-    glow: "hover:shadow-[0_0_20px_rgba(139,92,246,0.08)]",
-    text: "text-violet-100",
-    bg: "bg-[#110d18]",
-    activeBg: "bg-[#1b1326]",
+    accent: "bg-[#8f7bb5]",
+    border: "border-[#cdc3df]",
+    glow: "hover:shadow-[0_10px_24px_rgba(34,32,28,0.08)]",
+    text: "text-[#51436c]",
+    bg: "bg-[#fffaf1]/72",
+    activeBg: "bg-[#ebe5f3]",
   },
 
   cta: {
-    accent: "bg-emerald-400",
-    border: "border-emerald-900/40",
-    glow: "hover:shadow-[0_0_20px_rgba(16,185,129,0.08)]",
-    text: "text-emerald-100",
-    bg: "bg-[#09120d]",
-    activeBg: "bg-[#102019]",
+    accent: "bg-[#4b9b72]",
+    border: "border-[#bad4c5]",
+    glow: "hover:shadow-[0_10px_24px_rgba(34,32,28,0.08)]",
+    text: "text-[#365d46]",
+    bg: "bg-[#fffaf1]/72",
+    activeBg: "bg-[#e6efe9]",
   },
 };
 
@@ -130,7 +130,9 @@ export function SignalTag({
         ${style.text}
         ${active ? style.activeBg : style.bg}
         hover:-translate-y-[1px]
-        hover:border-white/10
+        hover:border-[#22201c]/20
+        hover:shadow-sm
+        hover:shadow-[#22201c]/8
 
         ${size === "md"
           ? "px-3 py-2 rounded-2xl"
@@ -138,9 +140,6 @@ export function SignalTag({
         }
       `}
     >
-      {/* top graph line */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-white/5" />
-
       {/* node layout */}
       <div className="flex items-center gap-2">
 
@@ -175,8 +174,8 @@ export function SignalTag({
               : "text-[11px]"
             }
             ${active
-              ? "text-white"
-              : "text-gray-300 group-hover:text-white"
+              ? "text-[#22201c]"
+              : "text-[#3a352d] group-hover:text-[#22201c]"
             }
           `}
         >
@@ -185,12 +184,10 @@ export function SignalTag({
 
         {/* active indicator */}
         {active && (
-          <div className="w-1 h-1 rounded-full bg-white/70 ml-1" />
+          <div className="w-1 h-1 rounded-full bg-[#22201c]/45 ml-1" />
         )}
       </div>
 
-      {/* subtle intelligence grid */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] bg-[size:6px_6px]" />
     </button>
   );
 }

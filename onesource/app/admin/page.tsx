@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
+import { ScopeIntro } from "@/components/ScopeIntro";
 
 import {
   VALID_EMOTIONS,
@@ -22,14 +23,14 @@ function QualityBadge({
   quality: "strong" | "moderate" | "weak";
 }) {
   const styles = {
-    strong: "bg-green-900 text-green-300 border-green-700",
-    moderate: "bg-yellow-900 text-yellow-300 border-yellow-700",
-    weak: "bg-red-900 text-red-300 border-red-700",
+    strong: "bg-[#e7f0e8] text-[#3c6a4a] border-[#b8cdb9]",
+    moderate: "bg-[#f5ead2] text-[#8a6424] border-[#dcc696]",
+    weak: "bg-[#f2ded8] text-[#8b4a3b] border-[#d7b0a4]",
   };
 
   return (
     <div
-      className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold ${styles[quality]}`}
+      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${styles[quality]}`}
     >
       <span>Signal Quality</span>
       <span className="opacity-60">|</span>
@@ -57,8 +58,8 @@ function ToggleButton({
       onClick={onClick}
       className={`px-3 py-1 rounded-full text-xs border transition-all ${
         selected
-          ? "bg-white text-black border-white"
-          : "bg-transparent text-gray-400 border-gray-700 hover:border-gray-500"
+          ? "bg-[#22201c] text-[#fffaf1] border-[#22201c]"
+          : "bg-[#fffaf1]/70 text-[#6f675d] border-[#22201c]/12 hover:border-[#22201c]/35 hover:text-[#22201c]"
       }`}
     >
       {label}
@@ -69,6 +70,7 @@ function ToggleButton({
 // ── Main Page ─────────────────────────────────────────────────
 
 export default function AdminPage() {
+  const [showScopeIntro, setShowScopeIntro] = useState(true);
   const [title, setTitle] = useState("");
   const [brand, setBrand] = useState("");
   const [platform, setPlatform] = useState("");
@@ -158,19 +160,41 @@ export default function AdminPage() {
   // ── Render ─────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-2xl mx-auto px-6 py-12 space-y-8">
+    <div className="min-h-screen bg-[#f5f1e8] text-[#22201c]">
+      {showScopeIntro ? (
+        <ScopeIntro
+          eyebrow="Current workspace"
+          title="You are adding ecommerce creative signals."
+          body="OneSource can study attention broadly. Right now, Admin keeps ecommerce inputs clean and consistent."
+          detail="Add the hook, emotion, visual style, CTA, platform, and niche so the intelligence layer has useful signal."
+          onPrimaryClick={() => setShowScopeIntro(false)}
+          primaryLabel="Add ecommerce creative"
+        />
+      ) : (
+        <div
+          id="admin-ingestion"
+          className="mx-auto min-h-screen max-w-2xl px-6 py-8"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(34,32,28,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(34,32,28,0.045) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
+        >
+      <div className="space-y-6">
 
         {/* Header */}
         <div>
+          <p className="mb-2 text-[10px] uppercase tracking-[0.22em] text-[#7c7265]">
+            Signal Governance
+          </p>
           <h1 className="text-2xl font-bold">Add Creative</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="mt-1 text-sm text-[#6f675d]">
             Signal quality determines intelligence accuracy.
           </p>
         </div>
 
         {/* Live Validation Panel */}
-        <div className="p-4 rounded-xl border border-gray-800 bg-[#0d0d0d] space-y-3">
+        <div className="space-y-2.5 rounded-xl border border-[#22201c]/10 bg-[#fffaf1]/72 p-4 shadow-sm shadow-[#22201c]/5">
           <QualityBadge
             score={validation.score}
             quality={validation.quality}
@@ -179,8 +203,8 @@ export default function AdminPage() {
           {validation.errors.length > 0 && (
             <ul className="space-y-1">
               {validation.errors.map((err) => (
-                <li key={err} className="text-xs text-red-400 flex gap-2">
-                  <span>✕</span>
+                <li key={err} className="flex gap-2 text-xs text-[#8b4a3b]">
+                  <span aria-hidden="true">x</span>
                   <span>{err}</span>
                 </li>
               ))}
@@ -190,8 +214,8 @@ export default function AdminPage() {
           {validation.warnings.length > 0 && (
             <ul className="space-y-1">
               {validation.warnings.map((warn) => (
-                <li key={warn} className="text-xs text-yellow-500 flex gap-2">
-                  <span>⚠</span>
+                <li key={warn} className="flex gap-2 text-xs text-[#8a6424]">
+                  <span aria-hidden="true">!</span>
                   <span>{warn}</span>
                 </li>
               ))}
@@ -199,23 +223,23 @@ export default function AdminPage() {
           )}
 
           {validation.isValid && validation.warnings.length === 0 && (
-            <p className="text-xs text-green-400">
-              ✓ All signals complete. Ready to save.
+            <p className="text-xs text-[#3c6a4a]">
+              All signals complete. Ready to save.
             </p>
           )}
         </div>
 
         {/* Core Fields */}
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           <input
-            className="w-full bg-[#111] border border-gray-800 rounded-lg px-4 py-2 text-sm placeholder-gray-600 focus:outline-none focus:border-gray-600"
+            className="w-full rounded-lg border border-[#22201c]/12 bg-[#fffaf1]/78 px-4 py-2 text-sm text-[#22201c] placeholder-[#8a8174] focus:border-[#7f9f94] focus:outline-none"
             placeholder="Title *"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
 
           <input
-            className="w-full bg-[#111] border border-gray-800 rounded-lg px-4 py-2 text-sm placeholder-gray-600 focus:outline-none focus:border-gray-600"
+            className="w-full rounded-lg border border-[#22201c]/12 bg-[#fffaf1]/78 px-4 py-2 text-sm text-[#22201c] placeholder-[#8a8174] focus:border-[#7f9f94] focus:outline-none"
             placeholder="Brand"
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
@@ -223,7 +247,7 @@ export default function AdminPage() {
 
           {/* Platform — controlled select */}
           <select
-            className="w-full bg-[#111] border border-gray-800 rounded-lg px-4 py-2 text-sm text-gray-300 focus:outline-none focus:border-gray-600"
+            className="w-full rounded-lg border border-[#22201c]/12 bg-[#fffaf1]/78 px-4 py-2 text-sm text-[#3a352d] focus:border-[#7f9f94] focus:outline-none"
             value={platform}
             onChange={(e) => setPlatform(e.target.value)}
           >
@@ -236,14 +260,14 @@ export default function AdminPage() {
           </select>
 
           <input
-            className="w-full bg-[#111] border border-gray-800 rounded-lg px-4 py-2 text-sm placeholder-gray-600 focus:outline-none focus:border-gray-600"
+            className="w-full rounded-lg border border-[#22201c]/12 bg-[#fffaf1]/78 px-4 py-2 text-sm text-[#22201c] placeholder-[#8a8174] focus:border-[#7f9f94] focus:outline-none"
             placeholder="Niche (skincare, fitness...)"
             value={niche}
             onChange={(e) => setNiche(e.target.value)}
           />
 
           <input
-            className="w-full bg-[#111] border border-gray-800 rounded-lg px-4 py-2 text-sm placeholder-gray-600 focus:outline-none focus:border-gray-600"
+            className="w-full rounded-lg border border-[#22201c]/12 bg-[#fffaf1]/78 px-4 py-2 text-sm text-[#22201c] placeholder-[#8a8174] focus:border-[#7f9f94] focus:outline-none"
             placeholder="Image URL"
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
@@ -252,7 +276,7 @@ export default function AdminPage() {
 
         {/* Emotion Tags */}
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#7c7265]">
             Emotion Tags *
           </p>
           <div className="flex flex-wrap gap-2">
@@ -269,7 +293,7 @@ export default function AdminPage() {
 
         {/* Hook Types */}
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#7c7265]">
             Hook Types *
           </p>
           <div className="flex flex-wrap gap-2">
@@ -286,7 +310,7 @@ export default function AdminPage() {
 
         {/* Visual Styles */}
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#7c7265]">
             Visual Styles
           </p>
           <div className="flex flex-wrap gap-2">
@@ -302,9 +326,9 @@ export default function AdminPage() {
         </div>
 
         {/* Optional Fields */}
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           <textarea
-            className="w-full bg-[#111] border border-gray-800 rounded-lg px-4 py-2 text-sm placeholder-gray-600 focus:outline-none focus:border-gray-600 resize-none"
+            className="w-full resize-none rounded-lg border border-[#22201c]/12 bg-[#fffaf1]/78 px-4 py-2 text-sm text-[#22201c] placeholder-[#8a8174] focus:border-[#7f9f94] focus:outline-none"
             placeholder="Hook text"
             rows={2}
             value={hook}
@@ -312,7 +336,7 @@ export default function AdminPage() {
           />
 
           <textarea
-            className="w-full bg-[#111] border border-gray-800 rounded-lg px-4 py-2 text-sm placeholder-gray-600 focus:outline-none focus:border-gray-600 resize-none"
+            className="w-full resize-none rounded-lg border border-[#22201c]/12 bg-[#fffaf1]/78 px-4 py-2 text-sm text-[#22201c] placeholder-[#8a8174] focus:border-[#7f9f94] focus:outline-none"
             placeholder="CTA"
             rows={2}
             value={cta}
@@ -320,7 +344,7 @@ export default function AdminPage() {
           />
 
           <textarea
-            className="w-full bg-[#111] border border-gray-800 rounded-lg px-4 py-2 text-sm placeholder-gray-600 focus:outline-none focus:border-gray-600 resize-none"
+            className="w-full resize-none rounded-lg border border-[#22201c]/12 bg-[#fffaf1]/78 px-4 py-2 text-sm text-[#22201c] placeholder-[#8a8174] focus:border-[#7f9f94] focus:outline-none"
             placeholder="Notes"
             rows={2}
             value={notes}
@@ -334,14 +358,16 @@ export default function AdminPage() {
           disabled={!validation.isValid || submitting}
           className={`w-full py-3 rounded-xl text-sm font-semibold transition-all ${
             validation.isValid && !submitting
-              ? "bg-white text-black hover:bg-gray-200"
-              : "bg-gray-800 text-gray-600 cursor-not-allowed"
+              ? "bg-[#22201c] text-[#fffaf1] hover:bg-[#3a352d]"
+              : "bg-[#e1d9cd] text-[#9b9285] cursor-not-allowed"
           }`}
         >
           {submitting ? "Saving..." : "Save Creative"}
         </button>
 
       </div>
+        </div>
+      )}
     </div>
   );
 }
